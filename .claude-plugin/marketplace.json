@@ -1,0 +1,35 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ellypsis-labs",
+  "owner": {
+    "name": "Ellypsis Labs",
+    "email": "sewar@ellypsis.dk"
+  },
+  "metadata": {
+    "description": "Plugins from Ellypsis Labs - knowledge work systems for Claude Code and Cowork.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "mcp-eval",
+      "description": "Evaluate MCP servers for production readiness. Test tools, measure token costs, grade responses, generate visual reports. Four-stage pipeline (init -> run/capture -> grade -> report) covering HTTP, stdio, and OAuth-integration MCP servers.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/EllypsisAI/mcp-eval.git"
+      },
+      "homepage": "https://github.com/EllypsisAI/mcp-eval",
+      "category": "development",
+      "author": {
+        "name": "Ellypsis"
+      },
+      "license": "MIT",
+      "keywords": [
+        "mcp",
+        "mcp-server",
+        "evaluation",
+        "testing",
+        "tool-evaluation"
+      ]
+    }
+  ]
+}
