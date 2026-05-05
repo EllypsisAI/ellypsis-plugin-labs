@@ -30,6 +30,27 @@
         "testing",
         "tool-evaluation"
       ]
+    },
+    {
+      "name": "scout",
+      "description": "An Ellypsis coworker example — a generic researcher that gathers companies and contacts and logs them to a Google Sheet workbook. One clean loop (research / find contacts / log), illustrative not exhaustive. Generic shape of the SIA pattern, fictional ICP, public from day one.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/EllypsisAI/scout.git"
+      },
+      "homepage": "https://github.com/EllypsisAI/scout",
+      "category": "research",
+      "author": {
+        "name": "Ellypsis"
+      },
+      "license": "MIT",
+      "keywords": [
+        "research",
+        "coworker",
+        "sheets",
+        "ellypsis",
+        "demo"
+      ]
     }
   ]
 }
