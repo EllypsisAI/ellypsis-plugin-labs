@@ -1,9 +1,9 @@
 # Connectors
 
-`.mcp.json` references both servers **by name, without URLs** — the platform pattern for
-directory entries whose endpoint is dynamic (provided at connect time). The name must match
-the MCP directory entry exactly for the surface to recognize and offer the connection;
-verifying the registered names is a machine-side item (pinch #13).
+`.mcp.json` declares both servers by URL. The gateway authenticates per user via OAuth at
+connect time. Exa's endpoint is keyless in the manifest by design — the API key is each
+client's own, added at workspace connect time (BYO key vs proxy is the per-client auth
+variance, pinch #11); a key never belongs in a public plugin manifest.
 
 ## Ellypsis gateway — required
 

@@ -1,6 +1,12 @@
 {
   "mcpServers": {
-    "ellypsis-gateway": {},
-    "exa": {}
+    "ellypsis-gateway": {
+      "type": "http",
+      "url": "https://gateway.ellypsis.dk/mcp"
+    },
+    "exa": {
+      "type": "http",
+      "url": "https://mcp.exa.ai/mcp"
+    }
   }
 }
