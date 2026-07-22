@@ -1,0 +1,9 @@
+{
+  "name": "sia",
+  "description": "Sales intelligence coworker by Ellypsis. Research companies, find contacts, draft outreach, and work your CRM — the operational depth is served per-company through the Ellypsis gateway.",
+  "version": "2.0.0-dev",
+  "author": {
+    "name": "Ellypsis",
+    "email": "sewar@ellypsis.dk"
+  }
+}

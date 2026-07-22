@@ -3,3 +3,10 @@
 .vscode/
 *.swp
 *~
+
+# Gateway-served content (licensed, per-company) — never in the public repo
+plugins/*/gateway/
+
+# SIA's changelog is design documentation dense with client context — stays local
+# (travels with the plugin when it moves to its private client marketplace)
+plugins/sia/CHANGELOG.md
