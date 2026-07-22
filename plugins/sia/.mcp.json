@@ -4,6 +4,10 @@
       "type": "http",
       "url": "https://gateway.ellypsis.dk/mcp"
     },
+    "capsule": {
+      "type": "http",
+      "url": "https://capsule.ellypsis.dk/mcp"
+    },
     "exa": {
       "type": "http",
       "url": "https://mcp.exa.ai/mcp"
