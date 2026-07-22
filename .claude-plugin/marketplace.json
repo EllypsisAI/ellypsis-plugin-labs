@@ -32,6 +32,23 @@
       ]
     },
     {
+      "name": "sia",
+      "description": "Sales intelligence coworker by Ellypsis. Research companies, find contacts, draft outreach, and work your CRM — the operational depth is served per-company through the Ellypsis gateway.",
+      "source": "./plugins/sia",
+      "category": "sales",
+      "author": {
+        "name": "Ellypsis"
+      },
+      "keywords": [
+        "sales",
+        "coworker",
+        "crm",
+        "research",
+        "outreach",
+        "ellypsis"
+      ]
+    },
+    {
       "name": "scout",
       "description": "An Ellypsis coworker example — a generic researcher that gathers companies and contacts and logs them to a Google Sheet workbook. One clean loop (research / find contacts / log), illustrative not exhaustive. Generic shape of the SIA pattern, fictional ICP, public from day one.",
       "source": {
