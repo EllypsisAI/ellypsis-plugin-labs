@@ -2,3 +2,4 @@ eval-workspace/
 eval-workspace-*/
 __pycache__/
 *.pyc
+scripts/fonts/*.woff2

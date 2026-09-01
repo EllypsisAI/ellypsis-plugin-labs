@@ -16,6 +16,7 @@ Usage:
 """
 
 import argparse
+import base64
 import html
 import json
 import os
@@ -645,249 +646,478 @@ def build_model(workspace, context_window):
 # --------------------------------------------------------------------------
 # rendering
 # --------------------------------------------------------------------------
+#
+# The page is one paper sheet on a desk, set in the Ellypsis OS tokens. Reading
+# order follows the questions a reader actually has: what is the verdict, what
+# did the run look like, which tool is the problem, did the agent find its way,
+# did it make anything up, what does the report not claim, and only then the
+# per-case evidence. Every number that is an estimate or approximate says so
+# where it is printed; nothing is derived here that grading did not decide.
 
-CSS = """
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+CSS = r"""
+*, *::before, *::after { box-sizing: border-box; }
 :root {
-  --bg: #0d1117; --surface: #161b22; --surface-2: #1c2129;
-  --border: #30363d; --border-subtle: #21262d;
-  --text: #c9d1d9; --text-muted: #8b949e; --text-bright: #e6edf3;
-  --primary: #58a6ff; --primary-muted: rgba(88,166,255,0.12);
-  --green: #3fb950; --green-muted: rgba(63,185,80,0.15);
-  --red: #f85149; --red-muted: rgba(248,81,73,0.15);
-  --yellow: #d29922; --yellow-muted: rgba(210,153,34,0.15);
-  --mono: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  --paper: #fbfaf6; --desk: #e9e3d3; --panel: #f2efe6; --ink: #191713;
+  --accent: #7c3f63; --accent-tint: #f0e4eb; --accent-dark: #5e2f4b;
+  --green: #55743e; --amber: #b5893a; --red: #a63a50;
+  --body:  color-mix(in srgb, var(--ink) 84%, var(--paper));
+  --body2: color-mix(in srgb, var(--ink) 92%, var(--paper));
+  --muted: color-mix(in srgb, var(--ink) 60%, var(--paper));
+  --faint: color-mix(in srgb, var(--ink) 36%, var(--paper));
+  --paper2: color-mix(in srgb, var(--paper) 60%, var(--panel));
+  --line:  color-mix(in srgb, var(--ink) 20%, transparent);
+  --line2: color-mix(in srgb, var(--ink) 42%, transparent);
+  --bar:   color-mix(in srgb, var(--ink) 58%, var(--paper));
+  --track: color-mix(in srgb, var(--ink) 9%, var(--paper));
+  --ok-ink: var(--green);
+  --warn-ink: color-mix(in srgb, var(--amber) 72%, var(--ink));
+  --bad-ink: var(--red);
+  --ok-tint:   color-mix(in srgb, var(--green) 11%, var(--paper));
+  --warn-tint: color-mix(in srgb, var(--amber) 14%, var(--paper));
+  --bad-tint:  color-mix(in srgb, var(--red) 10%, var(--paper));
+  --rx: 1; --bw: 2px; --mess: 1; --dash: dashed;
+  --shadow-card: 4px 5px 0 color-mix(in srgb, var(--ink) 16%, transparent);
+  --shadow-window: 0 24px 60px color-mix(in srgb, var(--ink) 22%, transparent);
+  --f-display: "Tanker", "Switzer", system-ui, sans-serif;
+  --f-body: "Switzer", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --f-quote: Georgia, "Times New Roman", serif;
+  color-scheme: light;
 }
-html { font-size: 14px; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #221e17; --desk: #131110; --panel: #2b261d; --ink: #f0ead9;
+    --accent: #c795b1; --accent-tint: #3f1f33; --accent-dark: #d8aec7;
+    --ok-ink:   color-mix(in srgb, var(--green) 58%, var(--ink));
+    --warn-ink: color-mix(in srgb, var(--amber) 70%, var(--ink));
+    --bad-ink:  color-mix(in srgb, var(--red) 60%, var(--ink));
+    --ok-tint:   color-mix(in srgb, var(--green) 22%, var(--paper));
+    --warn-tint: color-mix(in srgb, var(--amber) 22%, var(--paper));
+    --bad-tint:  color-mix(in srgb, var(--red) 24%, var(--paper));
+    --shadow-card: 4px 5px 0 color-mix(in srgb, var(--ink) 10%, transparent);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #221e17; --desk: #131110; --panel: #2b261d; --ink: #f0ead9;
+  --accent: #c795b1; --accent-tint: #3f1f33; --accent-dark: #d8aec7;
+  --ok-ink:   color-mix(in srgb, var(--green) 58%, var(--ink));
+  --warn-ink: color-mix(in srgb, var(--amber) 70%, var(--ink));
+  --bad-ink:  color-mix(in srgb, var(--red) 60%, var(--ink));
+  --ok-tint:   color-mix(in srgb, var(--green) 22%, var(--paper));
+  --warn-tint: color-mix(in srgb, var(--amber) 22%, var(--paper));
+  --bad-tint:  color-mix(in srgb, var(--red) 24%, var(--paper));
+  --shadow-card: 4px 5px 0 color-mix(in srgb, var(--ink) 10%, transparent);
+  color-scheme: dark;
+}
+
+html { font-size: 15px; }
 body {
-  background: var(--bg); color: var(--text); line-height: 1.5;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  margin: 0; background: var(--desk); color: var(--body2);
+  font-family: var(--f-body); line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
-.page { max-width: 1100px; margin: 0 auto; padding: 28px 24px 64px; }
-a { color: var(--primary); }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 2px; }
+b, strong { font-weight: 600; }
+small { font-size: inherit; }
 
-.topbar {
-  display: flex; align-items: baseline; justify-content: space-between;
-  flex-wrap: wrap; gap: 8px; padding-bottom: 10px;
-  border-bottom: 1px solid var(--border); margin-bottom: 20px;
+/* -- the sheet ------------------------------------------------------------- */
+.desk { padding: 32px 20px 72px; }
+.sheet {
+  max-width: 1120px; margin: 0 auto; background: var(--paper);
+  border: 1.5px solid var(--line2); border-radius: calc(12px * var(--rx));
+  box-shadow: var(--shadow-window); padding: 44px 52px 56px;
 }
-.topbar h1 { font-size: 16px; font-weight: 600; color: var(--text-bright); font-family: var(--mono); }
-.topbar .meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--text-muted); }
+@media (max-width: 760px) {
+  .desk { padding: 12px 8px 40px; }
+  .sheet { padding: 26px 18px 36px; }
+}
 
-/* -- verdict, the loudest thing on the page -- */
-.verdict {
-  border: 1px solid var(--border); border-left: 4px solid var(--text-muted);
-  border-radius: 8px; background: var(--surface);
-  padding: 22px 26px; margin-bottom: 22px;
+/* -- type roles ------------------------------------------------------------ */
+.kicker {
+  font: 500 11px/1.4 var(--f-mono); letter-spacing: 0.08em; text-transform: lowercase;
+  color: var(--muted); margin: 0 0 8px;
 }
-.verdict.v-ship { border-left-color: var(--green); background: linear-gradient(90deg, var(--green-muted), var(--surface) 42%); }
-.verdict.v-caveats { border-left-color: var(--yellow); background: linear-gradient(90deg, var(--yellow-muted), var(--surface) 42%); }
-.verdict.v-stop { border-left-color: var(--red); background: linear-gradient(90deg, var(--red-muted), var(--surface) 42%); }
-.verdict-label {
-  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--text-muted); margin-bottom: 6px;
+.mono { font-family: var(--f-mono); }
+.num { font-variant-numeric: tabular-nums; }
+h1.server {
+  font: 400 clamp(36px, 4.4vw, 52px)/1.05 var(--f-display); margin: 0 0 14px;
+  color: var(--ink); text-wrap: balance; word-break: break-word;
 }
-.verdict-word { font-size: 34px; line-height: 1.15; font-weight: 700; color: var(--text-bright); }
-.verdict.v-ship .verdict-word { color: var(--green); }
-.verdict.v-caveats .verdict-word { color: var(--yellow); }
-.verdict.v-stop .verdict-word { color: var(--red); }
-.verdict-reasoning { margin-top: 10px; font-size: 14px; max-width: 78ch; color: var(--text); }
-.verdict-tally {
-  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);
-  display: flex; flex-wrap: wrap; gap: 20px; font-size: 12px; color: var(--text-muted);
-}
-.verdict-tally b { color: var(--text-bright); font-variant-numeric: tabular-nums; }
+.masthead { padding-bottom: 22px; border-bottom: var(--bw) solid var(--ink); margin-bottom: 26px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 22px; font: 11.5px/1.7 var(--f-mono); color: var(--body); }
+.meta .chip { margin-left: 6px; }
 
-/* -- assumption chips + the interview facts the verdict rests on -- */
+.sec { margin-top: 52px; }
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+            padding-bottom: 10px; border-bottom: 1.5px var(--dash) var(--line2); margin-bottom: 18px; }
+.sec-head .kicker { margin: 0 0 4px; }
+.sec-head h2 { font: 400 28px/1.15 var(--f-display); margin: 0; color: var(--ink); }
+.sec-head .sub { font-size: 13.5px; color: var(--muted); margin: 4px 0 0; max-width: 70ch; }
+.sec-head .tools-right { display: flex; gap: 8px; align-items: center; }
+h3.sub-title { font: 500 11px/1.4 var(--f-mono); letter-spacing: 0.08em; text-transform: lowercase;
+               color: var(--muted); margin: 26px 0 10px; display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; }
+h3.sub-title .hint { font-family: var(--f-body); letter-spacing: 0; text-transform: none; font-weight: 400; font-size: 12.5px; }
+.empty { font-size: 13px; color: var(--muted); padding: 8px 0; }
+
+/* -- chips, stamps, badges ------------------------------------------------- */
 .chip {
-  display: inline-block; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
-  font-weight: 600; padding: 1px 7px; border-radius: 999px;
-  background: var(--yellow-muted); color: var(--yellow);
-  border: 1px solid rgba(210,153,34,0.4); white-space: nowrap;
+  display: inline-block; vertical-align: middle; white-space: nowrap;
+  font: 500 9.5px/1 var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--warn-ink); border: 1.5px solid var(--warn-ink);
+  border-radius: calc(3px * var(--rx)); padding: 3px 6px; background: var(--paper);
+  transform: rotate(calc(-2deg * var(--mess)));
 }
+.lvl {
+  display: inline-block; font: 500 10px/1 var(--f-mono); letter-spacing: 0.06em;
+  border: 1.5px solid var(--line2); border-radius: calc(4px * var(--rx));
+  padding: 3px 6px; color: var(--body); background: var(--paper);
+}
+.tag {
+  display: inline-block; font: 10.5px/1 var(--f-mono); border: 1.5px solid var(--line2);
+  border-radius: calc(999px * var(--rx)); padding: 4px 9px; color: var(--muted); white-space: nowrap;
+}
+.tag.warn { color: var(--warn-ink); border-color: var(--warn-ink); }
+.tag.dashed { border-style: var(--dash); }
+.badge {
+  display: inline-block; font: 500 11px/1 var(--f-mono); padding: 4px 8px;
+  border-radius: calc(4px * var(--rx)); white-space: nowrap; border: 1.5px solid transparent;
+}
+.badge-pass { color: var(--ok-ink); border-color: var(--ok-ink); background: var(--ok-tint); }
+.badge-fail { color: var(--bad-ink); border-color: var(--bad-ink); background: var(--bad-tint); }
+.badge-partial { color: var(--warn-ink); border-color: var(--warn-ink); background: var(--warn-tint); }
+.badge-neutral { color: var(--muted); border-color: var(--line2); border-style: var(--dash); }
+.st { display: inline-flex; align-items: center; gap: 6px; font: 500 12px/1.2 var(--f-mono); white-space: nowrap; }
+.st.ok { color: var(--ok-ink); } .st.warn { color: var(--warn-ink); } .st.bad { color: var(--bad-ink); } .st.none { color: var(--muted); }
+.st i { font-style: normal; font-size: 11px; }
+.ok { color: var(--ok-ink); } .warn { color: var(--warn-ink); } .bad { color: var(--bad-ink); }
+
+/* -- gaps ------------------------------------------------------------------ */
+.gaps {
+  border: 1.5px var(--dash) var(--warn-ink); border-radius: calc(8px * var(--rx));
+  padding: 12px 16px; margin-bottom: 22px; background: var(--warn-tint);
+}
+.gaps h4 { margin: 0 0 4px; font: 500 11px/1.4 var(--f-mono); letter-spacing: 0.08em; color: var(--warn-ink); text-transform: lowercase; }
+.gaps ul { margin: 0; padding-left: 18px; }
+.gaps li { font-size: 13px; color: var(--body); }
+
+/* -- verdict --------------------------------------------------------------- */
+.verdict {
+  position: relative; background: var(--paper); border: var(--bw) solid var(--ink);
+  border-radius: calc(10px * var(--rx)); box-shadow: var(--shadow-card);
+  padding: 24px 28px 22px; margin: 0 6px 6px 0;
+}
+.verdict-word {
+  font: 400 clamp(40px, 5.2vw, 62px)/1 var(--f-display); color: var(--ink);
+  margin: 2px 0 14px; text-wrap: balance;
+}
+.verdict.v-ship .verdict-word { color: var(--ok-ink); }
+.verdict.v-caveats .verdict-word { color: var(--warn-ink); }
+.verdict.v-stop .verdict-word { color: var(--bad-ink); }
+.verdict-reasoning { font-size: 16px; line-height: 1.6; color: var(--body2); max-width: 72ch; margin: 0; }
+.verdict-tally {
+  margin-top: 18px; padding-top: 12px; border-top: 1.5px var(--dash) var(--line2);
+  display: flex; flex-wrap: wrap; gap: 6px 22px; font: 11.5px/1.8 var(--f-mono); color: var(--muted);
+}
+.verdict-tally b { color: var(--ink); font-weight: 500; }
 .params {
-  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px 22px;
+  margin-top: 16px; padding-top: 14px; border-top: 1.5px var(--dash) var(--line2);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 26px;
 }
-.params-label {
-  grid-column: 1 / -1; font-size: 11px; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--text-muted);
+.params-label { grid-column: 1 / -1; font: 500 11px/1.4 var(--f-mono); letter-spacing: 0.08em; text-transform: lowercase; color: var(--muted); }
+.param-label { font: 500 10px/1.4 var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+               display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.param-value { font-size: 13.5px; color: var(--body2); line-height: 1.45; }
+.param.assumed .param-value { color: var(--warn-ink); }
+
+/* -- case strip ------------------------------------------------------------ */
+.strip { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
+.cell {
+  flex: 1 1 150px; min-width: 0; display: flex; flex-direction: column; gap: 5px;
+  padding: 9px 11px 10px; border: 1.5px solid var(--line2); border-top: 4px solid var(--line2);
+  border-radius: calc(6px * var(--rx)); background: var(--paper2); color: var(--body);
+  font-family: var(--f-mono); text-decoration: none;
 }
-.param-label { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
-.param-value { font-size: 12px; color: var(--text); }
-.param.assumed .param-value { color: var(--yellow); }
+.cell:hover { text-decoration: none; background: color-mix(in srgb, var(--ink) 5%, var(--paper2)); }
+.cell-id { font-size: 11.5px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cell-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.cell-tool { font-size: 10px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cell.pass { border-top-color: var(--green); background: var(--ok-tint); }
+.cell.fail, .cell.failed-to-run { border-top-color: var(--red); background: var(--bad-tint); }
+.cell.partial { border-top-color: var(--amber); background: var(--warn-tint); }
+.cell.ungraded, .cell.skipped { border-style: var(--dash); border-top-style: solid; border-top-color: var(--faint); }
+.cell.failed-to-run { border-style: var(--dash); border-top-style: solid; }
 
-/* -- stat row -- */
-.stats { display: flex; gap: 1px; background: var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 20px; }
-.stat { flex: 1; background: var(--surface); padding: 10px 14px; min-width: 140px; }
-.stat-val { font-size: 20px; font-weight: 600; color: var(--text-bright); font-variant-numeric: tabular-nums; }
-.stat-val.green { color: var(--green); } .stat-val.red { color: var(--red); } .stat-val.yellow { color: var(--yellow); }
-.stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+/* -- stat tiles ------------------------------------------------------------ */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0 26px; margin: 0 0 8px; }
+.stat { padding: 12px 0 14px; border-top: 1.5px var(--dash) var(--line2); }
+.stat-label { font-size: 12.5px; color: var(--muted); }
+.stat-val { font: 400 38px/1.05 var(--f-display); color: var(--ink); margin: 6px 0 4px; white-space: nowrap; }
+.stat-val small { font: 500 12px/1 var(--f-mono); color: var(--muted); margin-right: 5px; vertical-align: 6px; }
+.stat-val.green { color: var(--ok-ink); } .stat-val.yellow { color: var(--warn-ink); } .stat-val.red { color: var(--bad-ink); }
+.stat-note { font: 11px/1.5 var(--f-mono); color: var(--muted); }
+.stat-val .nodata { font: 400 30px/1 var(--f-body); color: var(--faint); }
 
-/* -- budget -- */
-.budget { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; margin-bottom: 8px; }
-.budget-header { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-.budget-track { height: 10px; background: var(--surface-2); border-radius: 5px; overflow: hidden; display: flex; }
+/* -- context budget -------------------------------------------------------- */
+.budget { padding: 4px 0 0; }
+.budget-header { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 16px;
+                 font: 11.5px/1.6 var(--f-mono); color: var(--muted); margin-bottom: 8px; }
+.budget-header b { color: var(--ink); font-weight: 500; }
+.budget-track { height: 14px; background: var(--track); border-radius: calc(4px * var(--rx)); overflow: hidden; display: flex; }
 .budget-seg { height: 100%; }
-.budget-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 11px; color: var(--text-muted); }
-.budget-legend-item { display: flex; align-items: center; gap: 5px; }
-.budget-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.budget-seg.useful { background: var(--bar); border-radius: 0 4px 4px 0; }
+.budget-seg.err { background: var(--red); border-radius: 0 4px 4px 0; margin-left: 2px; }
+.budget-legend { display: flex; gap: 6px 20px; flex-wrap: wrap; margin-top: 8px; font: 11px/1.6 var(--f-mono); color: var(--muted); }
+.budget-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.budget-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.note { font-size: 13px; color: var(--muted); margin: 10px 0 0; max-width: 78ch; }
+.note.bad { color: var(--bad-ink); }
 
-/* -- sections -- */
-.section-title {
-  font-size: 13px; font-weight: 600; color: var(--text-bright);
-  margin: 28px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
-  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
-}
-.section-title .hint { font-size: 11px; font-weight: 400; color: var(--text-muted); }
-.empty { font-size: 12px; color: var(--text-muted); padding: 10px 0; }
-
-/* -- tool cards -- */
-.tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; }
-.tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
-.tool-card.skipped { opacity: 0.65; }
-.tool-card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
-.tool-card-name { font-family: var(--mono); font-size: 13px; color: var(--text-bright); font-weight: 500; word-break: break-all; }
-.metric-group { border-top: 1px solid var(--border-subtle); padding-top: 6px; margin-top: 6px; }
-.metric-group:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
-.metric-group h4 { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 3px; }
-.kv { display: flex; justify-content: space-between; gap: 12px; padding: 1px 0; font-size: 12px; }
-.kv .k { color: var(--text-muted); }
-.kv .v { color: var(--text); font-family: var(--mono); font-variant-numeric: tabular-nums; }
-.kv .v.red { color: var(--red); } .kv .v.green { color: var(--green); } .kv .v.yellow { color: var(--yellow); }
-
-/* -- badges -- */
-.badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 4px; white-space: nowrap; }
-.badge-pass { background: var(--green-muted); color: var(--green); }
-.badge-fail { background: var(--red-muted); color: var(--red); }
-.badge-partial { background: var(--yellow-muted); color: var(--yellow); }
-.badge-neutral { background: var(--surface-2); color: var(--text-muted); }
-.badge-info { background: var(--primary-muted); color: var(--primary); }
-.badge-level { background: var(--surface-2); color: var(--primary); font-family: var(--mono); }
-
-/* -- trajectory -- */
-.traj { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; margin-bottom: 8px; }
-.traj-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-.traj-head .cid { font-family: var(--mono); font-size: 13px; color: var(--text-bright); }
-.traj-path { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12px; }
-.node {
-  font-family: var(--mono); font-size: 11px; padding: 3px 8px; border-radius: 4px;
-  border: 1px solid var(--border); background: var(--bg); color: var(--text-muted);
-}
-.node.hit { border-color: var(--green); color: var(--green); }
-.node.detour { border-color: var(--yellow); color: var(--yellow); }
-.node.err { border-color: var(--red); color: var(--red); }
-.node.start { border-style: dashed; }
-.arrow { color: var(--text-muted); font-size: 12px; }
-.traj-note { margin-top: 8px; font-size: 12px; color: var(--text-muted); }
-.traj-note.bad { color: var(--red); }
-
-/* -- tables -- */
-.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+/* -- tables ---------------------------------------------------------------- */
+.tbl-wrap { overflow-x: auto; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .tbl th {
-  text-align: left; padding: 7px 10px; font-weight: 600; font-size: 11px;
-  color: var(--text-muted); border-bottom: 1px solid var(--border); white-space: nowrap;
+  text-align: left; vertical-align: bottom; padding: 8px 10px 8px 0;
+  font: 500 10.5px/1.4 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  border-bottom: 1.5px solid var(--line2); white-space: nowrap;
 }
-.tbl td { padding: 7px 10px; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
-.tbl td.num { text-align: right; font-family: var(--mono); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.tbl td.mono { font-family: var(--mono); font-size: 12px; word-break: break-all; }
-.tbl tr.fabrication { background: var(--red-muted); }
-.tbl tr.fabrication td { color: var(--red); }
-.tbl tr.unverifiable { background: var(--yellow-muted); }
-.tbl tr.unverifiable td { color: var(--yellow); }
-.counts { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 12px; }
-.fab-count { display: flex; align-items: baseline; gap: 10px; }
-.fab-count .n { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.fab-count .n.zero { color: var(--green); }
-.fab-count .n.some { color: var(--red); }
-.fab-count .n.warn { color: var(--yellow); }
-.fab-count .n.none { color: var(--text-muted); }
-.fab-count .lbl { font-size: 12px; color: var(--text-muted); max-width: 34ch; }
-.claim-reason { display: block; font-size: 11px; opacity: 0.85; margin-top: 2px; }
+.tbl th small { display: block; text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--faint); white-space: normal; }
+.tbl td { padding: 10px 10px 10px 0; border-bottom: 1px var(--dash) var(--line); vertical-align: top; }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl td small { display: block; font: 10.5px/1.5 var(--f-mono); color: var(--muted); margin-top: 3px; }
+.tbl td.num, .tbl th.num { text-align: right; font-family: var(--f-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tbl td.mono { font-family: var(--f-mono); font-size: 12px; overflow-wrap: anywhere; }
+.tbl td.case { font-family: var(--f-mono); font-size: 12px; white-space: nowrap; }
+.tbl td.tight { white-space: nowrap; }
+.tbl tr.skipped td { color: var(--muted); }
 
-/* -- caveats -- */
-.caveats { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 18px; }
-.caveats h4 { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin: 10px 0 4px; }
-.caveats h4:first-child { margin-top: 0; }
+/* per-tool rows */
+.tools td.tool { min-width: 150px; max-width: 230px; }
+.tool-name { font: 500 13px/1.3 var(--f-mono); color: var(--ink); word-break: break-all; }
+.tool-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.bar-cell { min-width: 150px; }
+.bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; height: 16px; }
+.bar i { display: block; height: 10px; background: var(--bar); border-radius: 0 4px 4px 0; min-width: 2px; }
+.bar b { font: 500 11.5px/1 var(--f-mono); color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.bar.zero i { display: none; }
+
+/* claims */
+.tbl tr.fabrication td:first-child { box-shadow: inset 3px 0 var(--red); padding-left: 10px; }
+.tbl tr.fabrication td { background: var(--bad-tint); }
+.tbl tr.unverifiable td:first-child { box-shadow: inset 3px 0 var(--amber); padding-left: 10px; }
+.tbl tr.unverifiable td { background: var(--warn-tint); }
+.tbl tr.err td:first-child { box-shadow: inset 3px 0 var(--red); padding-left: 10px; }
+.claim-reason { display: block; font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+/* -- grounding counts ------------------------------------------------------ */
+.counts { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 26px; margin-bottom: 18px; }
+.fab-count { display: flex; align-items: flex-start; gap: 16px; padding: 4px 0 14px; }
+.fab-count .n { font: 400 46px/1 var(--f-display); min-width: 1.2ch; }
+.fab-count .n.zero { color: var(--ok-ink); } .fab-count .n.some { color: var(--bad-ink); }
+.fab-count .n.warn { color: var(--warn-ink); } .fab-count .n.none { color: var(--faint); }
+.fab-count .lbl { font-size: 13px; color: var(--body); max-width: 40ch; line-height: 1.5; padding-top: 4px; }
+.fab-count .lbl b { display: block; color: var(--ink); font-weight: 500; }
+
+/* -- trajectory ------------------------------------------------------------ */
+.traj { padding: 14px 0 16px; border-top: 1.5px var(--dash) var(--line); }
+.traj:first-of-type { border-top: none; padding-top: 4px; }
+.traj-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.traj-head .cid { font: 500 13px/1.3 var(--f-mono); color: var(--ink); }
+.traj-head .tgt { font: 11px/1.4 var(--f-mono); color: var(--muted); }
+.path { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 0; }
+.path li { display: inline-flex; align-items: center; }
+.path li + li::before { content: ""; display: inline-block; width: 22px; height: 1.5px; background: var(--line2); margin: 0 2px; }
+.node {
+  font: 11.5px/1 var(--f-mono); padding: 7px 10px; border-radius: calc(6px * var(--rx));
+  border: 1.5px solid var(--line2); color: var(--body); background: var(--paper); white-space: nowrap;
+}
+.node.start { border-style: var(--dash); color: var(--muted); }
+.node.hit { border-color: var(--green); background: var(--ok-tint); color: var(--ok-ink); font-weight: 500; }
+.node.detour { border-color: var(--amber); background: var(--warn-tint); color: var(--warn-ink); }
+.node.err { border-color: var(--red); background: var(--bad-tint); color: var(--bad-ink); }
+.traj-note { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+.traj-note.bad { color: var(--bad-ink); }
+
+/* -- caveats --------------------------------------------------------------- */
+.caveats { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 40px; }
+.caveats h4 { margin: 0 0 6px; font: 500 11px/1.4 var(--f-mono); letter-spacing: 0.08em; text-transform: lowercase; color: var(--muted); }
 .caveats ul { margin: 0; padding-left: 18px; }
-.caveats li { font-size: 12px; color: var(--text-muted); margin: 5px 0; }
-.caveats li.standing { color: var(--text); }
+.caveats li { font-size: 13px; color: var(--body); margin: 6px 0; line-height: 1.5; }
+.caveats li.standing { color: var(--body2); }
 
-/* -- case detail -- */
-details.case { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 6px; }
+/* -- case detail ----------------------------------------------------------- */
+.controls { display: flex; gap: 6px; }
+.controls button {
+  font: 11px/1 var(--f-mono); color: var(--muted); background: var(--paper);
+  border: 1.5px solid var(--line2); border-radius: calc(999px * var(--rx)); padding: 6px 12px; cursor: pointer;
+}
+.controls button:hover { color: var(--ink); border-color: var(--ink); }
+.case-anchor { scroll-margin-top: 20px; }
+details.case { border: 1.5px solid var(--line2); border-radius: calc(8px * var(--rx)); margin-bottom: 8px; background: var(--paper); }
+details.case[open] { border-color: var(--ink); }
 details.case > summary {
-  cursor: pointer; padding: 9px 14px; display: flex; align-items: center;
-  gap: 10px; flex-wrap: wrap; list-style: none;
+  cursor: pointer; padding: 11px 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; list-style: none;
 }
 details.case > summary::-webkit-details-marker { display: none; }
-details.case > summary::before { content: "\\25B6"; font-size: 9px; color: var(--text-muted); }
-details.case[open] > summary::before { content: "\\25BC"; }
-details.case > summary:hover { background: var(--surface-2); }
-summary .cid { font-family: var(--mono); font-size: 13px; color: var(--text-bright); }
+details.case > summary::before { content: "\25B8"; font-size: 12px; color: var(--muted); width: 10px; }
+details.case[open] > summary::before { content: "\25BE"; }
+details.case > summary:hover { background: color-mix(in srgb, var(--ink) 4%, var(--paper)); }
+summary .cid { font: 500 13px/1.3 var(--f-mono); color: var(--ink); }
 .spacer { flex: 1; }
-.mini { font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.case-body { padding: 4px 14px 14px; border-top: 1px solid var(--border); }
-.case-block { margin-top: 12px; }
-.case-block h4 { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; }
+.mini { font: 11px/1.5 var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.case-body { padding: 6px 16px 18px; border-top: 1.5px var(--dash) var(--line2); }
+.case-block { margin-top: 16px; }
+.case-block h4 { margin: 0 0 6px; font: 500 10.5px/1.4 var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.run-line { font: 11.5px/1.7 var(--f-mono); color: var(--body); }
+.run-line b { color: var(--ink); font-weight: 500; }
+.quote {
+  margin: 0; padding: 2px 0 2px 16px; border-left: 2px solid var(--line2);
+  font: italic 400 15.5px/1.6 var(--f-quote); color: var(--body2); white-space: pre-wrap; word-break: break-word; max-width: 80ch;
+}
 pre.box {
-  background: var(--bg); border: 1px solid var(--border-subtle); border-radius: 4px;
-  padding: 10px; font-family: var(--mono); font-size: 12px; line-height: 1.5;
-  color: var(--text); white-space: pre-wrap; word-break: break-word;
+  margin: 0; background: var(--paper2); border: 1px solid var(--line); border-radius: calc(6px * var(--rx));
+  padding: 10px 12px; font: 12px/1.55 var(--f-mono); color: var(--body); white-space: pre-wrap; word-break: break-word;
   max-height: 320px; overflow-y: auto;
 }
-pre.box.excerpt { font-size: 11px; color: var(--text-muted); max-height: 150px; margin-top: 4px; }
-.payload-note { font-size: 11px; color: var(--text-muted); }
-.payload-note .path { font-family: var(--mono); color: var(--primary); }
-.payload-note .capped { color: var(--yellow); }
-ul.plain { list-style: none; }
-ul.plain li { font-size: 12px; padding: 3px 0; border-bottom: 1px solid var(--border-subtle); }
+pre.box.excerpt { font-size: 11px; color: var(--muted); max-height: 150px; margin-top: 2px; }
+.payload-note { font: 11px/1.6 var(--f-mono); color: var(--muted); margin-top: 4px; }
+.payload-note .path { color: var(--accent); }
+.payload-note .capped { color: var(--warn-ink); }
+ul.plain { list-style: none; margin: 0; padding: 0; }
+ul.plain li { font-size: 13.5px; padding: 7px 0; border-bottom: 1px var(--dash) var(--line); line-height: 1.5; }
 ul.plain li:last-child { border-bottom: none; }
-.assert-state { font-weight: 700; margin-right: 6px; font-size: 11px; }
-.assert-state.pass { color: var(--green); }
-.assert-state.fail { color: var(--red); }
-.assert-state.ungradable { color: var(--yellow); }
-.assert-evidence { color: var(--text-muted); font-size: 11px; margin-top: 2px; padding-left: 22px; }
-.excerpt-row td { padding-top: 0; border-bottom: 1px solid var(--border); }
+.assert-state { display: inline-block; font: 500 10px/1 var(--f-mono); letter-spacing: 0.06em; padding: 3px 6px; margin-right: 8px;
+                border-radius: calc(3px * var(--rx)); border: 1.5px solid currentColor; vertical-align: 1px; }
+.assert-state.pass { color: var(--ok-ink); } .assert-state.fail { color: var(--bad-ink); } .assert-state.ungradable { color: var(--warn-ink); }
+.assert-method { font: 10.5px/1 var(--f-mono); color: var(--muted); margin-left: 8px; }
+.assert-evidence { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+.excerpt-row td { padding-top: 0; }
+.calls td { font-size: 12.5px; }
 
-.controls { display: flex; gap: 8px; }
-.controls button {
-  background: none; border: 1px solid var(--border); color: var(--text-muted);
-  font-size: 11px; padding: 3px 10px; border-radius: 4px; cursor: pointer;
-}
-.controls button:hover { border-color: var(--text-muted); color: var(--text); }
-
-.gaps { background: var(--surface); border: 1px solid var(--yellow); border-radius: 6px; padding: 10px 14px; margin-bottom: 18px; }
-.gaps h4 { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--yellow); margin-bottom: 4px; }
-.gaps li { font-size: 12px; color: var(--text-muted); margin-left: 18px; }
-
-.foot { margin-top: 32px; padding-top: 14px; border-top: 1px solid var(--border);
-        display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
-        font-size: 11px; color: var(--text-muted); }
+.foot { margin-top: 44px; padding-top: 14px; border-top: 1.5px var(--dash) var(--line2);
+        display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font: 11px/1.6 var(--f-mono); color: var(--faint); }
 
 @media (max-width: 760px) {
-  .stats { flex-direction: column; }
-  .tool-grid { grid-template-columns: 1fr; }
-  .verdict-word { font-size: 26px; }
+  .verdict { padding: 18px 18px 16px; }
+  .sec-head h2 { font-size: 24px; }
+  .stat-val { font-size: 32px; }
 }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 """
 
 JS = """
 document.addEventListener('click', function (e) {
   var btn = e.target.closest('button[data-all]');
-  if (!btn) return;
-  var open = btn.dataset.all === 'open';
-  document.querySelectorAll('details.case').forEach(function (d) { d.open = open; });
+  if (btn) {
+    var open = btn.dataset.all === 'open';
+    document.querySelectorAll('details.case').forEach(function (d) { d.open = open; });
+    return;
+  }
+  var cell = e.target.closest('a.cell');
+  if (cell) {
+    var target = document.getElementById(cell.getAttribute('href').slice(1));
+    var d = target && target.querySelector('details.case');
+    if (d) d.open = true;
+  }
 });
 """
 
+# Tanker and Switzer are the design system's faces. They are not shipped with
+# the plugin; drop the woff2 files into scripts/fonts/ and the report embeds
+# them. Without them the page falls back to the system stacks declared above.
+FONT_FILES = [
+    ("Tanker", "400", "tanker-400.woff2"),
+    ("Switzer", "400", "switzer-400.woff2"),
+    ("Switzer", "500", "switzer-500.woff2"),
+    ("Switzer", "600 700", "switzer-600.woff2"),
+]
 
-def section(title, hint="", extra=""):
-    right = ""
-    if hint:
-        right += '<span class="hint">%s</span>' % esc(hint)
-    if extra:
-        right += extra
-    return '<div class="section-title"><span>%s</span>%s</div>' % (esc(title), right)
+
+def font_faces():
+    fonts_dir = Path(__file__).resolve().parent / "fonts"
+    faces = []
+    for family, weight, name in FONT_FILES:
+        path = fonts_dir / name
+        if not path.is_file():
+            continue
+        try:
+            data = base64.b64encode(path.read_bytes()).decode("ascii")
+        except OSError:
+            continue
+        faces.append(
+            '@font-face{font-family:"%s";font-weight:%s;font-style:normal;font-display:swap;'
+            'src:url(data:font/woff2;base64,%s) format("woff2")}' % (family, weight, data)
+        )
+    return "".join(faces)
+
+
+OUTCOME_BADGE = {
+    "pass": ("badge-pass", "pass"),
+    "fail": ("badge-fail", "fail"),
+    "partial": ("badge-partial", "partial"),
+    "ungraded": ("badge-neutral", "ungraded"),
+    "failed-to-run": ("badge-fail", "sub-agent failed"),
+    "skipped": ("badge-neutral", "skipped"),
+}
+# icon + word, never colour alone
+OUTCOME_MARK = {
+    "pass": ("ok", "&#10003;", "pass"),
+    "fail": ("bad", "&#10005;", "fail"),
+    "partial": ("warn", "&#9684;", "partial"),
+    "ungraded": ("none", "&#9675;", "ungraded"),
+    "failed-to-run": ("bad", "&#10005;", "sub-agent failed"),
+    "skipped": ("none", "&ndash;", "skipped"),
+}
+
+
+def sec_head(number, title, sub="", extra=""):
+    right = '<div class="tools-right">%s</div>' % extra if extra else ""
+    return (
+        '<div class="sec-head"><div><div class="kicker">%s</div><h2>%s</h2>%s</div>%s</div>'
+        % (number, esc(title), '<p class="sub">%s</p>' % esc(sub) if sub else "", right)
+    )
+
+
+def status_mark(outcome):
+    cls, icon, word = OUTCOME_MARK.get(outcome, ("none", "&#9675;", outcome))
+    return '<span class="st %s"><i>%s</i>%s</span>' % (cls, icon, esc(word))
+
+
+def pct_of(value, maximum):
+    value, maximum = as_number(value), as_number(maximum)
+    if value is None or not maximum or value <= 0:
+        return 0.0
+    return max(1.5, min(100.0, value / maximum * 100))
+
+
+def render_masthead(m):
+    interview = m["interview"]
+    bits = []
+    if m["created"]:
+        bits.append(esc("planned %s" % m["created"]))
+    if interview.get("operator_model"):
+        bit = esc("operator model: %s" % interview["operator_model"])
+        if "operator_model" in m["unanswered"]:
+            bit += '<span class="chip">assumed</span>'
+        bits.append(bit)
+    st = m["stats"]
+    bits.append(esc("%d case(s)" % st["cases_total"]))
+    bits.append(esc("%d tool(s) in plan" % sum(1 for t in m["tool_cards"] if t["in_plan"])))
+    bits.append(esc("%d tool call(s) captured" % st["n_calls"]))
+    return (
+        '<header class="masthead"><div class="kicker">mcp-eval &middot; evaluation report</div>'
+        '<h1 class="server">%s</h1><div class="meta">%s</div></header>'
+        % (esc(m["server"]), "".join("<span>%s</span>" % b for b in bits))
+    )
+
+
+def render_gaps(m):
+    if not m["gaps"]:
+        return ""
+    return '<div class="gaps"><h4>partial workspace</h4><ul>%s</ul></div>' % "".join(
+        "<li>%s</li>" % esc(g) for g in m["gaps"]
+    )
 
 
 def render_verdict(m):
@@ -923,7 +1153,7 @@ def render_verdict(m):
         )
     return (
         '<section class="verdict %s">' % cls
-        + '<div class="verdict-label">Verdict</div>'
+        + '<div class="kicker">01 &middot; verdict</div>'
         + '<div class="verdict-word">%s</div>' % esc(str(word))
         + '<p class="verdict-reasoning">%s</p>' % esc(reasoning)
         + '<div class="verdict-tally">%s</div>' % "".join("<span>%s</span>" % t for t in tally)
@@ -939,16 +1169,36 @@ def render_params(m):
     if not rows:
         return ""
     cells = '<div class="params-label">Run parameters%s</div>' % (
-        " · %d assumed, not answered by the user" % len(m["unanswered"]) if m["unanswered"] else ""
+        " &middot; %d assumed, not answered by the user" % len(m["unanswered"]) if m["unanswered"] else ""
     )
     for row in rows:
-        chip = '<span class="chip">assumed</span>' if row["assumed"] else ""
+        stamp = '<span class="chip">assumed</span>' if row["assumed"] else ""
         cells += (
             '<div class="param%s"><div class="param-label">%s%s</div>'
             '<div class="param-value">%s</div></div>'
-            % (" assumed" if row["assumed"] else "", esc(row["label"]), chip, esc(row["value"]))
+            % (" assumed" if row["assumed"] else "", esc(row["label"]), stamp, esc(row["value"]))
         )
     return '<div class="params">%s</div>' % cells
+
+
+def render_strip(m):
+    """One cell per case in plan order: the shape of the run in a glance."""
+    if not m["cases"]:
+        return ""
+    cells = ""
+    for c in m["cases"]:
+        cells += (
+            '<a class="cell %s" href="#case-%s"><div class="cell-row"><span class="lvl">%s</span>%s</div>'
+            '<span class="cell-id">%s</span><span class="cell-tool">%s</span></a>'
+            % (
+                esc(c["outcome"]), esc(c["id"]), esc(c["level"] or "?"), status_mark(c["outcome"]),
+                esc(c["id"]), esc(c["tool"] or "server-level discovery"),
+            )
+        )
+    return '<div class="strip">%s</div>' % cells
+
+
+NODATA = '<span class="nodata">%s</span>' % DASH
 
 
 def render_stats(m):
@@ -958,17 +1208,22 @@ def render_stats(m):
     if pass_rate is not None:
         rate_cls = "green" if pass_rate >= 0.8 else ("yellow" if pass_rate >= 0.5 else "red")
     cells = [
-        ("%d / %d" % (st["cases_run"], st["cases_total"]), "cases run", ""),
-        (fmt_pct(pass_rate) if pass_rate is not None else DASH, "case pass rate", rate_cls),
-        ("est. " + fmt_tokens(st["est_tokens_total"]), "total tokens (est., chars/4)", ""),
-        ("~" + fmt_ms(st["median_latency"]), "median latency (~, incl. hook overhead)", ""),
+        ("cases run", "%d / %d" % (st["cases_run"], st["cases_total"]), "", "of the approved plan"),
+        ("case pass rate", fmt_pct(pass_rate) if pass_rate is not None else NODATA, rate_cls,
+         "%d of %d passed every assertion" % (st["cases_passed"], st["cases_total"])),
+        ("total tokens (est., chars/4)", "<small>est.</small>%s" % fmt_tokens(st["est_tokens_total"]), "",
+         "payload only, across %d call(s)" % st["n_calls"]),
+        ("median latency (~, incl. hook overhead)",
+         "<small>~</small>%s" % fmt_ms(st["median_latency"]) if st["median_latency"] is not None else NODATA, "",
+         "wall clock between the two hooks"),
     ]
-    html_out = '<div class="stats">'
-    for val, label, cls in cells:
-        html_out += '<div class="stat"><div class="stat-val %s">%s</div><div class="stat-label">%s</div></div>' % (
-            cls, val, esc(label),
+    out = '<div class="stats">'
+    for label, val, cls, note in cells:
+        out += (
+            '<div class="stat"><div class="stat-label">%s</div><div class="stat-val %s">%s</div>'
+            '<div class="stat-note">%s</div></div>' % (esc(label), cls, val, esc(note))
         )
-    return html_out + "</div>"
+    return out + "</div>"
 
 
 def render_budget(m):
@@ -979,51 +1234,150 @@ def render_budget(m):
     useful = max(total - errs, 0)
     pct = (total / window) if window else 0
     over = pct > 1
+    useful_pct = min(useful / window * 100, 100) if window else 0
+    err_pct = min(errs / window * 100, 100 - useful_pct) if window else 0
     body = (
         '<div class="budget-header">'
-        '<span>%d tool call(s) across %d case(s), payload only</span>'
-        '<span>est. %s / %s tokens (%s of context window)</span>'
+        "<span>%d tool call(s) across %d case(s), payload only</span>"
+        "<span><b>est. %s</b> / %s tokens (<b>%s</b> of context window)</span>"
         "</div>"
         % (st["n_calls"], st["cases_total"], fmt_tokens(total), fmt_tokens(window), fmt_pct(min(pct, 9.99)))
     )
-    useful_pct = min(useful / window * 100, 100) if window else 0
-    err_pct = min(errs / window * 100, 100 - useful_pct) if window else 0
     body += (
         '<div class="budget-track">'
-        '<div class="budget-seg" style="width:%.1f%%;background:var(--green)"></div>'
-        '<div class="budget-seg" style="width:%.1f%%;background:var(--red)"></div>'
+        '<div class="budget-seg useful" style="width:%.1f%%"></div>'
+        '<div class="budget-seg err" style="width:%.1f%%"></div>'
         "</div>" % (useful_pct, err_pct)
     )
     body += (
         '<div class="budget-legend">'
-        '<div class="budget-legend-item"><span class="budget-dot" style="background:var(--green)"></span>'
-        "successful payloads (est. %s)</div>"
-        '<div class="budget-legend-item"><span class="budget-dot" style="background:var(--red)"></span>'
-        "error payloads (est. %s)</div>"
-        '<div class="budget-legend-item">window: %s tokens</div>'
+        '<span class="budget-legend-item"><span class="budget-dot" style="background:var(--bar)"></span>'
+        "successful payloads (est. %s)</span>"
+        '<span class="budget-legend-item"><span class="budget-dot" style="background:var(--red)"></span>'
+        "error payloads (est. %s)</span>"
+        '<span class="budget-legend-item"><span class="budget-dot" style="background:var(--track)"></span>'
+        "window: %s tokens</span>"
         "</div>" % (fmt_tokens(useful), fmt_tokens(errs), fmt_tokens(window))
     )
     if over:
         body += (
-            '<div class="traj-note bad">These payloads together exceed the %s-token window '
-            "(est.). Sub-agent containment is the only reason a single session survived them.</div>"
+            '<p class="note bad">These payloads together exceed the %s-token window '
+            "(est.). Sub-agent containment is the only reason a single session survived them.</p>"
             % fmt_tokens(window)
         )
-    return section(
-        "Context budget", "payload est. tokens vs a %s-token window" % fmt_tokens(window)
-    ) + '<div class="budget">%s</div>' % body
+    return (
+        '<h3 class="sub-title">Context budget <span class="hint">payload est. tokens vs a %s-token window</span></h3>'
+        '<div class="budget">%s</div>' % (fmt_tokens(window), body)
+    )
 
 
-def render_tool_cards(m):
+def render_glance(m):
+    return (
+        '<section class="sec">'
+        + sec_head("02 &middot; the run at a glance", "Cases, headline numbers, context budget",
+                   "One cell per case in plan order; click a cell to open its evidence.")
+        + render_strip(m)
+        + render_stats(m)
+        + render_budget(m)
+        + "</section>"
+    )
+
+
+def render_tool_table(m):
     cards = m["tool_cards"]
-    out = section("Per-tool", "token figures est. (chars/4) · latency ~ (incl. hook overhead)")
+    out = '<section class="sec">' + sec_head(
+        "03 &middot; per-tool", "Per-tool",
+        "One row per tool, bars on a shared scale so the expensive one is visible without "
+        "reading. Token figures est. (chars/4) · latency ~ (incl. hook overhead).",
+    )
     if not cards:
-        return out + '<div class="empty">No tools in plan.json and no tool calls in telemetry.</div>'
-    out += '<div class="tool-grid">'
+        return out + '<div class="empty">No tools in plan.json and no tool calls in telemetry.</div></section>'
+
+    max_tokens = max([as_number(c["est_tokens_median"]) or 0 for c in cards], default=0)
+    max_latency = max([as_number(c["duration_median"]) or 0 for c in cards], default=0)
+
+    head = (
+        "<thead><tr>"
+        "<th>Tool</th>"
+        '<th class="num">Calls</th>'
+        "<th>Payload economics<small>median est. tokens per call</small></th>"
+        "<th>Latency<small>median, ~ wall clock</small></th>"
+        "<th>Reliability<small>error rate</small></th>"
+        "<th>Discoverability<small>found by the agent · L0/L1</small></th>"
+        "<th>Grade<small>assertions passed</small></th>"
+        "</tr></thead>"
+    )
+    rows = ""
     for c in cards:
         skipped = c["in_scope"] is False
         a = c["assertions"]
         graded_n = a["passed"] + a["failed"] + a["ungradable"]
+
+        tags = []
+        if skipped:
+            tags.append('<span class="tag dashed">skipped &middot; %s</span>' % esc(str(c["skip_reason"] or "out of scope")))
+        if c["write_capable"]:
+            tags.append('<span class="tag warn">write-capable</span>')
+        if not c["in_plan"]:
+            tags.append('<span class="tag warn">not in plan (other server)</span>')
+        tool_cell = '<td class="tool"><span class="tool-name">%s</span>%s</td>' % (
+            esc(c["name"]), '<div class="tool-tags">%s</div>' % "".join(tags) if tags else "",
+        )
+
+        if c["n_calls"] == 0:
+            calls_cell = '<td class="num">0<small>never called</small></td>'
+            payload_cell = '<td class="bar-cell"><span class="mono">%s</span></td>' % DASH
+            latency_cell = '<td class="bar-cell"><span class="mono">%s</span></td>' % DASH
+            rel_cell = "<td><span class=\"st none\">%s</span></td>" % DASH
+        else:
+            calls_cell = '<td class="num">%d<small>in %d case(s)</small></td>' % (c["n_calls"], c["n_cases"])
+            extra = "total est. %s" % fmt_tokens(c["est_tokens_total"])
+            if c["bytes_median"] is not None:
+                extra += " &middot; median payload %s" % fmt_bytes(c["bytes_median"])
+            if c["capped"]:
+                extra += ' &middot; <span class="warn">payload capture hit the 200 KB cap</span>'
+            payload_cell = (
+                '<td class="bar-cell"><div class="bar%s"><i style="width:%.1f%%"></i><b>est. %s</b></div><small>%s</small></td>'
+                % (
+                    "" if as_number(c["est_tokens_median"]) else " zero",
+                    pct_of(c["est_tokens_median"], max_tokens), fmt_tokens(c["est_tokens_median"]), extra,
+                )
+            )
+            latency_cell = (
+                '<td class="bar-cell"><div class="bar%s"><i style="width:%.1f%%"></i><b>~%s</b></div>'
+                "<small>slowest ~%s</small></td>"
+                % (
+                    "" if as_number(c["duration_median"]) else " zero",
+                    pct_of(c["duration_median"], max_latency), fmt_ms(c["duration_median"]), fmt_ms(c["duration_max"]),
+                )
+            )
+            err_rate = c["error_rate"]
+            if not isinstance(err_rate, (int, float)):
+                rel = '<span class="st none">%s</span>' % DASH
+            elif not err_rate:
+                rel = '<span class="st ok"><i>&#10003;</i>0% errors</span>'
+            else:
+                rel = '<span class="st %s"><i>&#10005;</i>%s errors</span>' % (
+                    "bad" if err_rate >= 0.25 else "warn", fmt_pct(err_rate),
+                )
+            kinds = '<small>%s</small>' % esc(", ".join(c["error_kinds"])) if c["error_kinds"] else ""
+            rel_cell = "<td>%s%s</td>" % (rel, kinds)
+
+        if c["found_of"]:
+            found_cls = "ok" if c["found_in"] == c["found_of"] else "bad"
+            icon = "&#10003;" if found_cls == "ok" else "&#10005;"
+            sub = []
+            if c["calls_to_first"] is not None:
+                sub.append("median %g call(s) to first correct" % c["calls_to_first"])
+            if c["detours"]:
+                sub.append("detours: %s" % esc(", ".join(sorted(set(c["detours"])))))
+            disc_cell = '<td><span class="st %s"><i>%s</i>%d/%d case(s)</span>%s</td>' % (
+                found_cls, icon, c["found_in"], c["found_of"],
+                "<small>%s</small>" % " &middot; ".join(sub) if sub else "",
+            )
+        else:
+            disc_cell = '<td><span class="st none">%s</span><small>no L0/L1 case targets it</small></td>' % DASH
+
         if skipped:
             grade = '<span class="badge badge-neutral">skipped</span>'
         elif graded_n == 0:
@@ -1034,116 +1388,48 @@ def render_tool_cards(m):
             grade = '<span class="badge badge-partial">%d/%d assertions</span>' % (a["passed"], graded_n)
         else:
             grade = '<span class="badge badge-pass">%d/%d assertions</span>' % (a["passed"], graded_n)
+        grade_cell = '<td class="tight">%s</td>' % grade
 
-        body = ""
-        if skipped:
-            body += '<div class="kv"><span class="k">not run</span><span class="v">%s</span></div>' % esc(
-                str(c["skip_reason"] or "out of scope")
-            )
-        if c["write_capable"]:
-            body += '<div class="kv"><span class="k">write-capable</span><span class="v yellow">yes</span></div>'
-        if not c["in_plan"]:
-            body += '<div class="kv"><span class="k">source</span><span class="v yellow">not in plan (other server)</span></div>'
-
-        if c["n_calls"] == 0:
-            body += '<div class="kv"><span class="k">calls</span><span class="v">0 &mdash; never called</span></div>'
-        else:
-            err_rate = c["error_rate"]
-            err_cls = "green" if not err_rate else ("red" if err_rate >= 0.25 else "yellow")
-            body += (
-                '<div class="metric-group"><h4>Payload economics</h4>'
-                '<div class="kv"><span class="k">calls</span><span class="v">%d in %d case(s)</span></div>'
-                '<div class="kv"><span class="k">median payload</span><span class="v">%s</span></div>'
-                '<div class="kv"><span class="k">median tokens</span><span class="v">est. %s</span></div>'
-                '<div class="kv"><span class="k">total tokens</span><span class="v">est. %s</span></div>'
-                "%s</div>"
-                % (
-                    c["n_calls"], c["n_cases"], fmt_bytes(c["bytes_median"]),
-                    fmt_tokens(c["est_tokens_median"]), fmt_tokens(c["est_tokens_total"]),
-                    '<div class="kv"><span class="k">payload capture</span>'
-                    '<span class="v yellow">hit the 200 KB cap</span></div>' if c["capped"] else "",
-                )
-            )
-            body += (
-                '<div class="metric-group"><h4>Latency</h4>'
-                '<div class="kv"><span class="k">median</span><span class="v">~%s</span></div>'
-                '<div class="kv"><span class="k">slowest</span><span class="v">~%s</span></div>'
-                "</div>" % (fmt_ms(c["duration_median"]), fmt_ms(c["duration_max"]))
-            )
-            body += (
-                '<div class="metric-group"><h4>Reliability</h4>'
-                '<div class="kv"><span class="k">error rate</span><span class="v %s">%s</span></div>'
-                "%s</div>"
-                % (
-                    err_cls,
-                    fmt_pct(err_rate) if isinstance(err_rate, (int, float)) else DASH,
-                    '<div class="kv"><span class="k">error kinds</span><span class="v red">%s</span></div>'
-                    % esc(", ".join(c["error_kinds"])) if c["error_kinds"] else "",
-                )
-            )
-        if c["found_of"]:
-            found_cls = "green" if c["found_in"] == c["found_of"] else "red"
-            body += (
-                '<div class="metric-group"><h4>Discoverability</h4>'
-                '<div class="kv"><span class="k">found by the agent</span><span class="v %s">%d/%d case(s)</span></div>'
-                '<div class="kv"><span class="k">median calls to first correct</span><span class="v">%s</span></div>'
-                "%s</div>"
-                % (
-                    found_cls, c["found_in"], c["found_of"],
-                    ("%g" % c["calls_to_first"]) if c["calls_to_first"] is not None else DASH,
-                    '<div class="kv"><span class="k">detours</span><span class="v yellow">%s</span></div>'
-                    % esc(", ".join(sorted(set(c["detours"])))) if c["detours"] else "",
-                )
-            )
-        out += (
-            '<div class="tool-card%s"><div class="tool-card-head">'
-            '<span class="tool-card-name">%s</span>%s</div>%s</div>'
-            % (" skipped" if skipped else "", esc(c["name"]), grade, body)
+        rows += '<tr%s>%s%s%s%s%s%s%s</tr>' % (
+            ' class="skipped"' if skipped else "",
+            tool_cell, calls_cell, payload_cell, latency_cell, rel_cell, disc_cell, grade_cell,
         )
-    return out + "</div>"
+    return out + '<div class="tbl-wrap"><table class="tbl tools">%s<tbody>%s</tbody></table></div></section>' % (head, rows)
 
 
 def render_trajectories(m):
     cases = [c for c in m["cases"] if c["level"] in ("L0", "L1")]
-    out = section(
-        "Discovery trajectory",
-        "L0/L1 only · did the agent find the right tool, and what did it touch first?",
+    out = '<section class="sec">' + sec_head(
+        "04 &middot; discovery", "Discovery trajectory",
+        "L0/L1 only. Did the agent find the right tool, and what did it touch first?",
     )
     if not cases:
-        return out + '<div class="empty">No L0 or L1 cases in this plan &mdash; nothing to trace.</div>'
+        return out + '<div class="empty">No L0 or L1 cases in this plan &mdash; nothing to trace.</div></section>'
     for c in cases:
         traj = c["trajectory"]
         found = traj.get("found_tool")
         detours = [str(d) for d in dlist(traj, "detours")]
         ctf = traj.get("calls_to_first_correct")
 
-        head = (
-            '<div class="traj-head"><span class="badge badge-level">%s</span>'
-            '<span class="cid">%s</span>%s' % (
-                esc(c["level"] or "?"), esc(c["id"]),
-                '<span class="badge badge-info">target: %s</span>' % esc(c["tool"]) if c["tool"]
-                else '<span class="badge badge-neutral">no named target (server-level discovery)</span>',
-            )
+        head = '<div class="traj-head"><span class="lvl">%s</span><span class="cid">%s</span><span class="tgt">%s</span></div>' % (
+            esc(c["level"] or "?"), esc(c["id"]),
+            "target: %s" % esc(c["tool"]) if c["tool"] else "no named target (server-level discovery)",
         )
-        head += '<span class="spacer"></span></div>'
 
-        nodes = ['<span class="node start">task issued</span>']
+        nodes = ['<li><span class="node start">task issued</span></li>']
         for call in c["calls"]:
             row = call["row"]
             cls = "err" if row.get("is_error") else ("hit" if call["on_target"] else "detour")
             nodes.append(
-                '<span class="node %s">%s%s</span>'
-                % (
-                    cls, esc(call["qualified"]),
-                    " &middot; error" if row.get("is_error") else "",
-                )
+                '<li><span class="node %s">%s%s</span></li>'
+                % (cls, esc(call["qualified"]), " &middot; error" if row.get("is_error") else "")
             )
         if len(nodes) == 1:
             for d in detours:
-                nodes.append('<span class="node detour">%s</span>' % esc(d))
+                nodes.append('<li><span class="node detour">%s</span></li>' % esc(d))
             if found is True and c["tool"]:
-                nodes.append('<span class="node hit">%s</span>' % esc(c["tool"]))
-        path = '<div class="traj-path">%s</div>' % '<span class="arrow">&rarr;</span>'.join(nodes)
+                nodes.append('<li><span class="node hit">%s</span></li>' % esc(c["tool"]))
+        path = '<ol class="path">%s</ol>' % "".join(nodes)
 
         notes = []
         if found is True:
@@ -1164,16 +1450,14 @@ def render_trajectories(m):
         if not c["calls"]:
             notes.append("No telemetry recorded for this case.")
         note_cls = "traj-note bad" if found is False else "traj-note"
-        out += '<div class="traj">%s%s<div class="%s">%s</div></div>' % (
-            head, path, note_cls, esc(" ".join(notes)),
-        )
-    return out
+        out += '<div class="traj">%s%s<p class="%s">%s</p></div>' % (head, path, note_cls, esc(" ".join(notes)))
+    return out + "</section>"
 
 
-STATE_LABEL = {
-    "verified": "verified",
-    "fabricated": "NO &mdash; fabrication",
-    "unverifiable": "unverifiable",
+STATE_CHIP = {
+    "verified": '<span class="st ok"><i>&#10003;</i>verified</span>',
+    "fabricated": '<span class="st bad"><i>&#10005;</i>NO &mdash; fabrication</span>',
+    "unverifiable": '<span class="st warn"><i>?</i>unverifiable</span>',
 }
 STATE_ROW_CLASS = {"verified": "", "fabricated": "fabrication", "unverifiable": "unverifiable"}
 
@@ -1181,67 +1465,64 @@ STATE_ROW_CLASS = {"verified": "", "fabricated": "fabrication", "unverifiable": 
 def render_grounding(m):
     rows = m["grounding_rows"]
     fabs, unver = m["fabrications"], m["unverifiable"]
-    out = section(
-        "Grounding",
-        "every claim in a deliverable, checked against the captured payload of the call it cites",
+    out = '<section class="sec">' + sec_head(
+        "05 &middot; grounding", "Grounding",
+        "Every claim in a deliverable, checked against the captured payload of the call it cites.",
     )
     out += (
         '<div class="counts">'
-        '<div class="fab-count"><span class="n %s">%d</span><span class="lbl">%s</span></div>'
-        '<div class="fab-count"><span class="n %s">%d</span><span class="lbl">%s</span></div>'
+        '<div class="fab-count"><span class="n %s">%d</span><span class="lbl"><b>fabrication(s)</b>'
+        "claims contradicted by, or absent from, an intact payload</span></div>"
+        '<div class="fab-count"><span class="n %s">%d</span><span class="lbl"><b>unverifiable</b>'
+        "no intact payload to check against; not counted as fabrication</span></div>"
         "</div>"
-        % (
-            "zero" if fabs == 0 else "some", fabs,
-            "fabrication(s) &mdash; claims contradicted by, or absent from, an intact payload",
-            "none" if unver == 0 else "warn", unver,
-            "unverifiable &mdash; no intact payload to check against; not counted as fabrication",
-        )
+        % ("zero" if fabs == 0 else "some", fabs, "none" if unver == 0 else "warn", unver)
     )
     if m["fabrication_reported"] != m["fabrication_listed"] and rows:
         out += (
-            '<div class="traj-note">grades_summary/grading reported %d fabrication(s); the claim '
+            '<p class="note">grades_summary/grading reported %d fabrication(s); the claim '
             "rows list %d. The claim rows are authoritative per the workspace contract, so the "
-            "count above comes from them.</div>"
+            "count above comes from them.</p>"
             % (m["fabrication_reported"], m["fabrication_listed"])
         )
     if not rows:
-        out += '<div class="empty">No claims were recorded in any grading.json.</div>'
-        return out
-    out += (
+        return out + '<div class="empty">No claims were recorded in any grading.json.</div></section>'
+    body = (
         '<table class="tbl"><thead><tr><th>Case</th><th>Claim</th><th>Source tool call</th>'
         "<th>Grounded</th><th>Reason</th></tr></thead><tbody>"
     )
     for r in rows:
         if r["source_tool"]:
-            src = '<span class="mono">%s</span><span class="mini claim-reason">%s</span>' % (
+            src = '<span class="mono">%s</span><span class="claim-reason mono">%s</span>' % (
                 esc(str(r["source_tool"])), esc(str(r["source_id"])),
             )
         elif r["source_id"]:
             src = '<span class="mono">%s</span>' % esc(str(r["source_id"]))
         else:
-            src = "no source cited"
-        out += (
-            '<tr class="%s"><td class="mono">%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'
+            src = '<span class="mono">no source cited</span>'
+        row_cls = STATE_ROW_CLASS[r["state"]]
+        body += (
+            '<tr%s><td class="case">%s</td><td>%s</td><td>%s</td><td class="tight">%s</td><td>%s</td></tr>'
             % (
-                STATE_ROW_CLASS[r["state"]], esc(r["case"]), esc(r["claim"]), src,
-                STATE_LABEL[r["state"]], esc(r["reason"]) if r["reason"] else DASH,
+                ' class="%s"' % row_cls if row_cls else "", esc(r["case"]), esc(r["claim"]), src,
+                STATE_CHIP[r["state"]], esc(r["reason"]) if r["reason"] else DASH,
             )
         )
-    return out + "</tbody></table>"
+    return out + '<div class="tbl-wrap">%s</tbody></table></div></section>' % body
 
 
 def render_caveats(m):
-    out = section("Caveats", "what this report does not claim")
-    body = '<h4>True of every mcp-eval report</h4><ul>%s</ul>' % "".join(
+    out = '<section class="sec">' + sec_head("06 &middot; caveats", "Caveats", "What this report does not claim.")
+    body = "<div><h4>true of every mcp-eval report</h4><ul>%s</ul></div>" % "".join(
         '<li class="standing">%s</li>' % esc(c) for c in STANDING_CAVEATS
     )
     if m["caveats"]:
-        body += '<h4>From this run</h4><ul>%s</ul>' % "".join(
+        body += "<div><h4>from this run</h4><ul>%s</ul></div>" % "".join(
             "<li>%s</li>" % esc(c) for c in m["caveats"]
         )
     else:
-        body += '<h4>From this run</h4><div class="empty">No run-specific caveats were recorded.</div>'
-    return out + '<div class="caveats">%s</div>' % body
+        body += '<div><h4>from this run</h4><div class="empty">No run-specific caveats were recorded.</div></div>'
+    return out + '<div class="caveats">%s</div></section>' % body
 
 
 def render_payload(call):
@@ -1273,32 +1554,23 @@ def render_payload(call):
 
 
 def render_cases(m):
-    out = section(
-        "Case detail",
-        "click a case to expand",
+    out = '<section class="sec">' + sec_head(
+        "07 &middot; evidence", "Case detail", "Click a case to expand its task, deliverable, grading and telemetry.",
         '<span class="controls"><button data-all="open">expand all</button>'
         '<button data-all="close">collapse all</button></span>',
     )
     if not m["cases"]:
-        return out + '<div class="empty">No cases found in plan.json or on disk.</div>'
+        return out + '<div class="empty">No cases found in plan.json or on disk.</div></section>'
 
-    badge_for = {
-        "pass": ("badge-pass", "pass"),
-        "fail": ("badge-fail", "fail"),
-        "partial": ("badge-partial", "partial"),
-        "ungraded": ("badge-neutral", "ungraded"),
-        "failed-to-run": ("badge-fail", "sub-agent failed"),
-        "skipped": ("badge-neutral", "skipped"),
-    }
     for c in m["cases"]:
-        cls, label = badge_for.get(c["outcome"], ("badge-neutral", c["outcome"]))
+        cls, label = OUTCOME_BADGE.get(c["outcome"], ("badge-neutral", c["outcome"]))
         tokens = sum(
             r["row"].get("est_tokens") or 0 for r in c["calls"]
             if isinstance(r["row"].get("est_tokens"), (int, float))
         )
         summary_line = (
             '<summary><span class="badge %s">%s</span>'
-            '<span class="badge badge-level">%s</span>'
+            '<span class="lvl">%s</span>'
             '<span class="cid">%s</span>'
             '<span class="spacer"></span>'
             '<span class="mini">%s &middot; %d call(s) &middot; est. %s tokens</span></summary>'
@@ -1310,15 +1582,13 @@ def render_cases(m):
 
         body = '<div class="case-body">'
         body += (
-            '<div class="case-block"><h4>Run</h4>'
-            '<div class="kv"><span class="k">status</span><span class="v">%s</span></div>'
-            '<div class="kv"><span class="k">ran on</span><span class="v">%s</span></div>'
-            "</div>" % (esc(str(c["status"])), esc(str(c["model"] or "unrecorded")))
+            '<div class="case-block"><div class="run-line">status <b>%s</b> &middot; ran on <b>%s</b></div></div>'
+            % (esc(str(c["status"])), esc(str(c["model"] or "unrecorded")))
         )
         if c["task"]:
-            body += '<div class="case-block"><h4>Task given to the sub-agent</h4><pre class="box">%s</pre></div>' % esc(c["task"])
+            body += '<div class="case-block"><h4>Task given to the sub-agent</h4><blockquote class="quote">%s</blockquote></div>' % esc(c["task"])
         if c["deliverable"]:
-            body += '<div class="case-block"><h4>Deliverable</h4><pre class="box">%s</pre></div>' % esc(c["deliverable"])
+            body += '<div class="case-block"><h4>Deliverable</h4><blockquote class="quote">%s</blockquote></div>' % esc(c["deliverable"])
         elif c["outcome"] == "failed-to-run":
             body += '<div class="case-block"><h4>Deliverable</h4><div class="empty">The sub-agent failed; no deliverable was returned.</div></div>'
 
@@ -1331,7 +1601,7 @@ def render_cases(m):
                     state, scls = "FAIL", "fail"
                 else:
                     state, scls = "UNGRADABLE", "ungradable"
-                method = ' <span class="badge badge-neutral">%s</span>' % esc(a["method"]) if a["method"] else ""
+                method = '<span class="assert-method">%s</span>' % esc(a["method"]) if a["method"] else ""
                 evidence = '<div class="assert-evidence">%s</div>' % esc(a["evidence"]) if a["evidence"] else ""
                 items += '<li><span class="assert-state %s">%s</span>%s%s%s</li>' % (
                     scls, state, esc(a["text"]), method, evidence,
@@ -1354,14 +1624,15 @@ def render_cases(m):
                 r = call["row"]
                 err = r.get("is_error")
                 rows += (
-                    '<tr class="%s"><td class="num">%d</td><td class="mono">%s</td>'
+                    '<tr%s><td class="num">%d</td><td class="mono">%s</td>'
                     '<td class="mono">%s</td><td class="num">~%s</td><td class="num">%s</td>'
-                    '<td class="num">est. %s</td><td>%s</td></tr>'
+                    '<td class="num">est. %s</td><td class="tight">%s</td></tr>'
                     % (
-                        "fabrication" if err else "", i, esc(call["qualified"]),
+                        ' class="err"' if err else "", i, esc(call["qualified"]),
                         esc(short_json(r.get("args"))), fmt_ms(r.get("duration_ms")),
                         fmt_bytes(r.get("payload_bytes")), fmt_tokens(r.get("est_tokens")),
-                        esc(str(r.get("error_kind") or "none")),
+                        '<span class="st bad"><i>&#10005;</i>%s</span>' % esc(str(r.get("error_kind") or "error"))
+                        if err else '<span class="st none">none</span>',
                     )
                 )
                 rows += (
@@ -1369,60 +1640,41 @@ def render_cases(m):
                     % render_payload(call)
                 )
             body += (
-                '<div class="case-block"><h4>Tool calls (telemetry)</h4>'
-                '<table class="tbl"><thead><tr><th>#</th><th>Tool</th><th>Args</th>'
-                "<th>~Latency</th><th>Payload</th><th>Tokens (est.)</th><th>Error</th></tr></thead>"
-                "<tbody>%s</tbody></table></div>" % rows
+                '<div class="case-block"><h4>Tool calls (telemetry)</h4><div class="tbl-wrap">'
+                '<table class="tbl calls"><thead><tr><th class="num">#</th><th>Tool</th><th>Args</th>'
+                '<th class="num">~Latency</th><th class="num">Payload</th><th class="num">Tokens (est.)</th><th>Error</th></tr></thead>'
+                "<tbody>%s</tbody></table></div></div>" % rows
             )
         else:
             body += '<div class="case-block"><h4>Tool calls (telemetry)</h4><div class="empty">No tool calls recorded for this case.</div></div>'
 
-        out += "<details class=\"case\">%s%s</div></details>" % (summary_line, body)
-    return out
-
-
-def render_gaps(m):
-    if not m["gaps"]:
-        return ""
-    return '<div class="gaps"><h4>Partial workspace</h4><ul>%s</ul></div>' % "".join(
-        "<li>%s</li>" % esc(g) for g in m["gaps"]
-    )
+        out += '<div class="case-anchor" id="case-%s"><details class="case">%s%s</div></details></div>' % (
+            esc(c["id"]), summary_line, body,
+        )
+    return out + "</section>"
 
 
 def render_html(m):
-    interview = m["interview"]
-    meta_bits = []
-    if m["created"]:
-        meta_bits.append(esc("planned %s" % m["created"]))
-    if interview.get("operator_model"):
-        bit = esc("operator model: %s" % interview["operator_model"])
-        if "operator_model" in m["unanswered"]:
-            bit += ' <span class="chip">assumed</span>'
-        meta_bits.append(bit)
-    meta_bits.append(esc("%d case(s)" % m["stats"]["cases_total"]))
-    meta = "".join("<span>%s</span>" % b for b in meta_bits)
-
     blob = json.dumps(m["raw"], ensure_ascii=False, default=str).replace("<", "\\u003c")
-
     parts = [
         "<!DOCTYPE html>",
         '<html lang="en"><head><meta charset="UTF-8">',
         '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
         "<title>%s &middot; mcp-eval report</title>" % esc(m["server"]),
-        "<style>%s</style></head><body><div class=\"page\">" % CSS,
-        '<div class="topbar"><h1>%s</h1><div class="meta">%s</div></div>' % (esc(m["server"]), meta),
+        "<style>%s%s</style></head><body>" % (font_faces(), CSS),
+        '<div class="desk"><main class="sheet">',
+        render_masthead(m),
         render_gaps(m),
         render_verdict(m),
-        render_stats(m),
-        render_budget(m),
-        render_tool_cards(m),
+        render_glance(m),
+        render_tool_table(m),
         render_trajectories(m),
         render_grounding(m),
         render_caveats(m),
         render_cases(m),
-        '<div class="foot"><span>mcp-eval &middot; workspace: %s</span><span>generated %s</span></div>'
+        '<footer class="foot"><span>mcp-eval &middot; workspace: %s</span><span>generated %s</span></footer>'
         % (esc(m["workspace"]), esc(m["raw"]["generated"])),
-        "</div>",
+        "</main></div>",
         '<script type="application/json" id="eval-data">%s</script>' % blob,
         "<script>%s</script>" % JS,
         "</body></html>",
