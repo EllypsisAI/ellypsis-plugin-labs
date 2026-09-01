@@ -4,6 +4,15 @@ What changed in each release, and why it is better. This file ships inside the p
 is published, so it is written for people using mcp-eval — not for its authors. Internal
 design notes and anything about who the tool was built with belong in the workshop, not here.
 
+## 1.0.4 — 2026-09-01
+
+Documentation pass. The changelog is written for people using mcp-eval, and an internal
+design note that had been shipping inside the plugin directory is removed. No functional
+changes.
+
+Version bumped so `plugin update` re-copies; an install keeps whatever files it already has
+until the version changes.
+
 ## 1.0.3 — 2026-09-01
 
 **Fixtures and worked examples are fully synthetic.** The example account is

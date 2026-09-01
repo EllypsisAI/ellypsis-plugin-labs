@@ -5,7 +5,7 @@
 ### Catalog
 - Added `brand-kit` **v0.2.2** — takes a startup from nothing to a usable visual identity: an interview builds the brand foundation, visual brainstorming turns taste into something you can point at, and the kit assembles what you locked into files you can use.
 - Added `not-ai-slop` **v0.2.1** — turns a post or article into a carousel whose visuals don't announce themselves as generated: a slide plan you approve first, backgrounds prompted by process rather than by style adjective, and an editable slide file alongside the PDF.
-- `mcp-eval` **v1.0.3** — fully synthetic fixtures and worked examples; test suite moved out of the packaged plugin directory.
+- `mcp-eval` **v1.0.4** — fully synthetic fixtures and worked examples; test suite moved out of the packaged plugin directory.
 
 ## [0.2.0] - 2026-08-18
 
