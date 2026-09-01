@@ -1,0 +1,8 @@
+{
+  "case_id": "l1-search-contacts",
+  "model": "sonnet",
+  "deliverable": "We know two people at Contoso Fabrication: Dana Whitfield and Priya Raman.",
+  "claimed_sources": ["search_contacts: the contact records"],
+  "friction": [],
+  "status": "completed"
+}

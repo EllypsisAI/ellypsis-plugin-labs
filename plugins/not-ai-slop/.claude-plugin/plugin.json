@@ -1,0 +1,20 @@
+{
+  "name": "not-ai-slop",
+  "version": "0.2.1",
+  "description": "Visuals for things you've written that don't announce themselves as generated. Designs a carousel from your post, writes image prompts that don't read as AI, and works from your brand rather than a house style.",
+  "author": {
+    "name": "Ellypsis",
+    "email": "sewar@ellypsis.dk"
+  },
+  "homepage": "https://github.com/EllypsisAI/ellypsis-plugin-labs",
+  "license": "MIT",
+  "keywords": [
+    "carousel",
+    "linkedin",
+    "image-prompting",
+    "design",
+    "social",
+    "brand",
+    "visuals"
+  ]
+}

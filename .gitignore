@@ -1,0 +1,13 @@
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Gateway-served content — not part of the published plugin
+plugins/*/gateway/
+
+# Test artifacts (suites live at tests/<plugin>/, never inside a shipped plugin)
+tests/*/fixtures/*/eval-report.html
+__pycache__/
+*.pyc

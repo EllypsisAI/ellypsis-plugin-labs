@@ -1,0 +1,10 @@
+{
+  "name": "brand-kit",
+  "version": "0.2.2",
+  "description": "Brand Kit — takes a startup from nothing to a usable visual identity: logo, color palette, typography. An interview builds your brand foundation, visual brainstorming turns taste into something you can point at, and the kit assembles what you locked into files you can actually use.",
+  "author": {
+    "name": "Ellypsis",
+    "email": "sewar@ellypsis.dk"
+  },
+  "license": "MIT"
+}

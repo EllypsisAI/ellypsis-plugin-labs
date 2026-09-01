@@ -1,0 +1,10 @@
+{
+  "case_id": "l3-list-deals-spec",
+  "model": "sonnet",
+  "deliverable": "",
+  "claimed_sources": [],
+  "friction": [
+    "Sub-agent terminated before returning a deliverable"
+  ],
+  "status": "subagent_failed"
+}

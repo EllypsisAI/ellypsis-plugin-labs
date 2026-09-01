@@ -1,0 +1,1 @@
+{"deals": [{"id": "DEAL-1001", "name": "Press line upgrade", "value": 720000, "stage": "proposal", "status": "open"}, {"id": "DEAL-1002", "name": "Conveyor retrofit", "value": 340000, "stage": "qualified", "status": "open"}, {"id": "DEAL-1003", "name": "Maintenance retainer", "value": 180000, "stage": "negotiation", "status": "open"}]}

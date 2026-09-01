@@ -1,0 +1,20 @@
+{
+  "name": "mcp-eval",
+  "version": "1.0.3",
+  "description": "Evaluate MCP servers in the hands of an LLM. Sub-agents run realistic tasks against your connected server while hooks capture the trajectory - discoverability, argument fidelity, payload economics, latency, reliability, grounding. Verdict-first HTML dashboard.",
+  "author": {
+    "name": "Ellypsis",
+    "email": "sewar@ellypsis.dk"
+  },
+  "homepage": "https://github.com/EllypsisAI/ellypsis-plugin-labs",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "evaluation",
+    "testing",
+    "discoverability",
+    "tool-evaluation",
+    "claude"
+  ]
+}

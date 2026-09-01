@@ -1,0 +1,26 @@
+{
+  "verdict": "ship-with-caveats",
+  "reasoning": "Sonnet finds all three read tools and recovers from a bad argument name without help, so the integration is operable by the audience it is meant for. Three things hold back an unqualified ship: search_contacts returns a 48 KB payload for a two-contact answer, fetch_attachment returns 240 KB in one block and blows past the 200 KB capture cap so part of its own answer cannot be checked, and the one deliverable that went beyond its payload did so silently - it asserted a sign-off authority the CRM never returned. Ship it for read-only consultant workflows, page or filter the two large payloads, and re-run before any write tool is put in scope.",
+  "cases_total": 5,
+  "cases_passed": 2,
+  "assertions_total": 11,
+  "passed": 8,
+  "failed": 1,
+  "ungradable": 1,
+  "per_tool": {
+    "search_contacts": {"cases": 2, "passed": 1, "est_tokens_median": 11975,
+                        "duration_ms_median": 1675, "error_rate": 0.0},
+    "list_deals": {"cases": 2, "passed": 1, "est_tokens_median": 1183,
+                   "duration_ms_median": 705, "error_rate": 0.5},
+    "fetch_attachment": {"cases": 1, "passed": 1, "est_tokens_median": 61428,
+                         "duration_ms_median": 3400, "error_rate": 0.0}
+  },
+  "caveats": [
+    "est_tokens are chars/4 estimates",
+    "The audience answer was not given by the user - the plan assumed non-technical consultants, and every L1 task phrasing follows from that assumption.",
+    "fetch_attachment's payload exceeded the 200 KB capture cap, so one claim in that case is unverifiable rather than verified or fabricated.",
+    "The L3 control for list_deals never ran - its sub-agent failed - so 'the tool is broken' and 'the tool is hard to call' are not separated for that tool.",
+    "create_entry was never exercised: it is write-capable and was not approved for this run.",
+    "One assertion is ungradable rather than failed: the payload carries no currency field, so the deliverable's currency wording cannot be checked either way."
+  ]
+}

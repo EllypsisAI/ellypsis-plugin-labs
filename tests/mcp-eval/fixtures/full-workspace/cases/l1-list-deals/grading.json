@@ -1,0 +1,26 @@
+{
+  "case_id": "l1-list-deals",
+  "assertions": [
+    {"text": "reaches list_deals and recovers from the first failed call", "method": "programmatic",
+     "passed": true,
+     "evidence": "toolu_c1 returned mcp_error; toolu_c2 succeeded with corrected argument name"},
+    {"text": "reports open deal values from the payload", "method": "semantic",
+     "passed": true, "evidence": "all three deal values in the deliverable match the payload records"},
+    {"text": "states the currency of each deal value", "method": "semantic",
+     "passed": null,
+     "evidence": "ungradable: the payload carries no currency field, so there is nothing to check the deliverable against"}
+  ],
+  "grounding": {
+    "claims": [
+      {"claim": "Contoso Fabrication has 3 open deals", "source": "toolu_c2", "grounded": true},
+      {"claim": "The open deals total 1,240,000", "source": "toolu_c2", "grounded": true},
+      {"claim": "The Press line upgrade is 720,000", "source": "toolu_c2", "grounded": true}
+    ],
+    "fabrications": 0
+  },
+  "trajectory": {
+    "found_tool": true,
+    "detours": [],
+    "calls_to_first_correct": 2
+  }
+}

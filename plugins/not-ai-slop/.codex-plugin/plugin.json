@@ -1,0 +1,42 @@
+{
+  "name": "not-ai-slop",
+  "version": "0.2.1",
+  "description": "Visuals for things you've written that don't announce themselves as generated. Turns a post or article into a carousel, with a slide plan you approve before anything is made.",
+  "author": {
+    "name": "Ellypsis",
+    "email": "sewar@ellypsis.dk",
+    "url": "https://ellypsis.dk"
+  },
+  "homepage": "https://github.com/EllypsisAI/ellypsis-plugin-labs",
+  "repository": "https://github.com/EllypsisAI/ellypsis-plugin-labs",
+  "license": "MIT",
+  "keywords": [
+    "carousel",
+    "linkedin",
+    "image-prompting",
+    "design",
+    "social",
+    "brand",
+    "slides",
+    "visuals"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "not-ai-slop",
+    "shortDescription": "Carousels and image prompts that don't read as AI",
+    "longDescription": "Turns something you've already written into a carousel. You approve the exact words on every slide before anything is generated, so the edits happen when they're free rather than after export. Backgrounds are prompted by the physical process that would have produced the look, never by style adjective, which is what keeps them off the generic-AI mean. Everything is derived from your own brand via a small design.md rather than a house style, and you always get an editable slide file alongside the flattened export.",
+    "developerName": "Ellypsis",
+    "category": "Design",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://ellypsis.dk",
+    "defaultPrompt": [
+      "Turn this post into a LinkedIn carousel",
+      "Write me an image prompt that won't look AI-generated",
+      "Pull our brand out of our website into a design.md"
+    ],
+    "brandColor": "#0E1116"
+  }
+}

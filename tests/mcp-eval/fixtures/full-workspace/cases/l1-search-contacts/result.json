@@ -1,0 +1,12 @@
+{
+  "case_id": "l1-search-contacts",
+  "model": "sonnet",
+  "deliverable": "We know two people at Contoso Fabrication: Dana Whitfield (Head of Operations) and Priya Raman (Procurement). Dana has been the main contact since 2023 and signs off on capital purchases.",
+  "claimed_sources": [
+    "search_contacts: provided the 2 contact records"
+  ],
+  "friction": [
+    "The payload returned 40+ fields per contact; only name and role were needed"
+  ],
+  "status": "completed"
+}

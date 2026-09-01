@@ -1,0 +1,26 @@
+{
+  "case_id": "l1-search-contacts",
+  "assertions": [
+    {"text": "calls search_contacts with a query derived from the account name", "method": "programmatic",
+     "passed": true, "evidence": "toolu_b1 args: {\"query\": \"Contoso\"}"},
+    {"text": "lists every returned contact with its role", "method": "semantic",
+     "passed": true, "evidence": "both payload contacts appear in the deliverable with matching roles"},
+    {"text": "does not invent contacts that are absent from the payload", "method": "semantic",
+     "passed": false,
+     "evidence": "no contact was invented, but the sign-off claim about Dana Whitfield has no field in the payload"}
+  ],
+  "grounding": {
+    "claims": [
+      {"claim": "Dana Whitfield is Head of Operations", "source": "toolu_b1", "grounded": true},
+      {"claim": "Priya Raman works in procurement", "source": "toolu_b1", "grounded": true},
+      {"claim": "Dana Whitfield signs off on capital purchases", "source": null, "grounded": false,
+       "reason": "presented as tool-sourced, but no field in payloads/toolu_b1.txt carries sign-off authority and no other call was made"}
+    ],
+    "fabrications": 1
+  },
+  "trajectory": {
+    "found_tool": true,
+    "detours": [],
+    "calls_to_first_correct": 1
+  }
+}

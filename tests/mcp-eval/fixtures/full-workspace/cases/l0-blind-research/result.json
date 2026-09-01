@@ -1,0 +1,13 @@
+{
+  "case_id": "l0-blind-research",
+  "model": "sonnet",
+  "deliverable": "Contoso Fabrication is an active account. Contacts on file: Dana Whitfield (Head of Operations), Priya Raman (Procurement). The most recent note is a maintenance follow-up. I found the contact records through the CRM server's contact search after first checking the notes server, which held only the inspection note.",
+  "claimed_sources": [
+    "search_notes: the maintenance follow-up note",
+    "search_contacts: the two contact records"
+  ],
+  "friction": [
+    "No obvious entry point at first - searched notes before finding a CRM server"
+  ],
+  "status": "completed"
+}

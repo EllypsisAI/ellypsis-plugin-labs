@@ -1,0 +1,25 @@
+{
+  "server": "acme-crm",
+  "created": "2026-08-17T13:55:00Z",
+  "interview": {
+    "use_case": "Sales consultants pulling contact context before a call.",
+    "audience": "Non-technical consultants.",
+    "operator_model": "sonnet",
+    "domain_inputs": {"company": "Contoso Fabrication"}
+  },
+  "tools": [
+    {"name": "search_contacts", "write_capable": false, "in_scope": true}
+  ],
+  "cases": [
+    {
+      "id": "l1-search-contacts",
+      "tool": "search_contacts",
+      "level": "L1",
+      "task": "Who do we know at Contoso Fabrication?",
+      "assertions": [
+        "calls search_contacts with a query derived from the account name",
+        "lists every returned contact with its role"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ellypsis-labs",
+  "owner": {
+    "name": "Ellypsis Labs",
+    "email": "sewar@ellypsis.dk"
+  },
+  "metadata": {
+    "description": "Plugins from Ellypsis Labs - knowledge work systems for Claude Code and Cowork.",
+    "version": "0.3.0"
+  },
+  "plugins": [
+    {
+      "name": "brand-kit",
+      "description": "Takes a startup from nothing to a usable visual identity - logo, color palette, typography - in conversation. An interview builds your brand foundation, visual brainstorming turns taste into something you can point at, and the kit assembles what you locked into files you can actually use.",
+      "source": "./plugins/brand-kit",
+      "category": "design",
+      "author": {
+        "name": "Ellypsis"
+      },
+      "license": "MIT",
+      "keywords": [
+        "brand",
+        "visual-identity",
+        "logo",
+        "design",
+        "startup",
+        "palette",
+        "typography"
+      ]
+    },
+    {
+      "name": "mcp-eval",
+      "description": "Evaluate an MCP server in the hands of an LLM. Sub-agents run realistic tasks against your connected server while hooks capture the trajectory - discoverability, argument fidelity, payload economics, latency, reliability, grounding. Verdict-first HTML dashboard.",
+      "source": "./plugins/mcp-eval",
+      "category": "development",
+      "author": {
+        "name": "Ellypsis"
+      },
+      "license": "MIT",
+      "keywords": [
+        "mcp",
+        "mcp-server",
+        "evaluation",
+        "testing",
+        "discoverability",
+        "tool-evaluation"
+      ]
+    },
+    {
+      "name": "not-ai-slop",
+      "description": "Visuals for things you've written that don't announce themselves as generated. Turns a post or article into a carousel: a slide plan you approve before anything is made, background images prompted by process rather than by style adjective, and an editable slide file alongside the PDF. Works from your brand, not a house look.",
+      "source": "./plugins/not-ai-slop",
+      "category": "design",
+      "author": {
+        "name": "Ellypsis"
+      },
+      "license": "MIT",
+      "keywords": [
+        "carousel",
+        "linkedin",
+        "image-prompting",
+        "design",
+        "social",
+        "brand",
+        "visuals",
+        "slides"
+      ]
+    }
+  ]
+}

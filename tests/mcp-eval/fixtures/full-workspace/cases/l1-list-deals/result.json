@@ -1,0 +1,12 @@
+{
+  "case_id": "l1-list-deals",
+  "model": "sonnet",
+  "deliverable": "Contoso Fabrication has 3 open deals worth 1,240,000 in total. The largest is the Press line upgrade at 720,000.",
+  "claimed_sources": [
+    "list_deals: the three open deal records"
+  ],
+  "friction": [
+    "First call failed - the tool wanted 'account', not 'company'; the error text did not say which"
+  ],
+  "status": "completed"
+}

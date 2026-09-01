@@ -1,0 +1,24 @@
+{
+  "case_id": "l0-blind-research",
+  "assertions": [
+    {"text": "finds and uses the target server unprompted", "method": "programmatic",
+     "passed": true,
+     "evidence": "telemetry toolu_a2 shows mcp__acme-crm__search_contacts called after one detour"},
+    {"text": "summary names the account and cites where each fact came from", "method": "semantic",
+     "passed": true,
+     "evidence": "deliverable attributes the note to the notes server and the contacts to contact search"}
+  ],
+  "grounding": {
+    "claims": [
+      {"claim": "Dana Whitfield is Head of Operations at Contoso Fabrication", "source": "toolu_a2", "grounded": true},
+      {"claim": "Priya Raman handles procurement", "source": "toolu_a2", "grounded": true},
+      {"claim": "The most recent note is a maintenance follow-up", "source": "toolu_a1", "grounded": true}
+    ],
+    "fabrications": 0
+  },
+  "trajectory": {
+    "found_tool": true,
+    "detours": ["mcp__notes__search_notes"],
+    "calls_to_first_correct": 2
+  }
+}

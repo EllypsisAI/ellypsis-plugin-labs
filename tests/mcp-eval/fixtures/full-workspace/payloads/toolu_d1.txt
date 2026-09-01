@@ -1,0 +1,66 @@
+EQUIPMENT INSPECTION REPORT - Press line 3, asset ref 7310.
+
+Section 1, general condition: the line was inspected under load and at standstill on 2026-01-12. Panel coating shows crazing along the feed guard consistent with age.
+
+Section 2, bearing vibration readings: 142 measurement points, tabulated below.
+  point 001  side-a  8.1 mm/s
+  point 002  side-b  8.2 mm/s
+  point 003  side-a  8.3 mm/s
+  point 004  side-b  8.4 mm/s
+  point 005  side-a  8.5 mm/s
+  point 006  side-b  8.6 mm/s
+  point 007  side-a  8.7 mm/s
+  point 008  side-b  8.8 mm/s
+  point 009  side-a  8.9 mm/s
+  point 010  side-b  9.0 mm/s
+  point 011  side-a  9.1 mm/s
+  point 012  side-b  9.2 mm/s
+  point 013  side-a  9.3 mm/s
+  point 014  side-b  9.4 mm/s
+  point 015  side-a  9.5 mm/s
+  point 016  side-b  9.6 mm/s
+  point 017  side-a  8.0 mm/s
+  point 018  side-b  8.1 mm/s
+  point 019  side-a  8.2 mm/s
+  point 020  side-b  8.3 mm/s
+  point 021  side-a  8.4 mm/s
+  point 022  side-b  8.5 mm/s
+  point 023  side-a  8.6 mm/s
+  point 024  side-b  8.7 mm/s
+  point 025  side-a  8.8 mm/s
+  point 026  side-b  8.9 mm/s
+  point 027  side-a  9.0 mm/s
+  point 028  side-b  9.1 mm/s
+  point 029  side-a  9.2 mm/s
+  point 030  side-b  9.3 mm/s
+  point 031  side-a  9.4 mm/s
+  point 032  side-b  9.5 mm/s
+  point 033  side-a  9.6 mm/s
+  point 034  side-b  8.0 mm/s
+  point 035  side-a  8.1 mm/s
+  point 036  side-b  8.2 mm/s
+  point 037  side-a  8.3 mm/s
+  point 038  side-b  8.4 mm/s
+  point 039  side-a  8.5 mm/s
+  point 040  side-b  8.6 mm/s
+  point 041  side-a  8.7 mm/s
+  point 042  side-b  8.8 mm/s
+  point 043  side-a  8.9 mm/s
+  point 044  side-b  9.0 mm/s
+  point 045  side-a  9.1 mm/s
+  point 046  side-b  9.2 mm/s
+  point 047  side-a  9.3 mm/s
+  point 048  side-b  9.4 mm/s
+  point 049  side-a  9.5 mm/s
+  point 050  side-b  9.6 mm/s
+  point 051  side-a  8.0 mm/s
+  point 052  side-b  8.1 mm/s
+  point 053  side-a  8.2 mm/s
+  point 054  side-b  8.3 mm/s
+  point 055  side-a  8.4 mm/s
+  point 056  side-b  8.5 mm/s
+  point 057  side-a  8.6 mm/s
+  point 058  side-b  8.7 mm/s
+  point 059  side-a  8.8 mm/s
+
+…[truncated]

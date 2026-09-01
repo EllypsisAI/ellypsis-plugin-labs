@@ -1,0 +1,74 @@
+{
+  "server": "acme-crm",
+  "created": "2026-08-17T13:55:00Z",
+  "interview": {
+    "use_case": "Sales consultants pulling contact and deal context before a call.",
+    "audience": "Non-technical consultants who describe what they want in plain language.",
+    "operator_model": "sonnet",
+    "domain_inputs": {
+      "company": "Contoso Fabrication",
+      "deal_id": "DEAL-1001"
+    },
+    "unanswered": ["audience"]
+  },
+  "tools": [
+    {"name": "search_contacts", "write_capable": false, "in_scope": true},
+    {"name": "list_deals", "write_capable": false, "in_scope": true},
+    {"name": "fetch_attachment", "write_capable": false, "in_scope": true},
+    {"name": "create_entry", "write_capable": true, "in_scope": false,
+     "skip_reason": "write-capable, not approved"}
+  ],
+  "cases": [
+    {
+      "id": "l0-blind-research",
+      "tool": null,
+      "level": "L0",
+      "task": "Find out everything we currently know about Contoso Fabrication as an account and summarise it for a sales call tomorrow.",
+      "assertions": [
+        "finds and uses the target server unprompted",
+        "summary names the account and cites where each fact came from"
+      ]
+    },
+    {
+      "id": "l1-search-contacts",
+      "tool": "search_contacts",
+      "level": "L1",
+      "task": "Who do we know at Contoso Fabrication? Give me the contacts and their roles.",
+      "assertions": [
+        "calls search_contacts with a query derived from the account name",
+        "lists every returned contact with its role",
+        "does not invent contacts that are absent from the payload"
+      ]
+    },
+    {
+      "id": "l1-list-deals",
+      "tool": "list_deals",
+      "level": "L1",
+      "task": "What is open with Contoso Fabrication right now, money-wise?",
+      "assertions": [
+        "reaches list_deals and recovers from the first failed call",
+        "reports open deal values from the payload",
+        "states the currency of each deal value"
+      ]
+    },
+    {
+      "id": "l1-fetch-attachment",
+      "tool": "fetch_attachment",
+      "level": "L1",
+      "task": "There is a inspection report attached to the Contoso Fabrication deal. What does it say about the line condition?",
+      "assertions": [
+        "reaches fetch_attachment for the deal's inspection report",
+        "answers from the attachment text rather than from general knowledge"
+      ]
+    },
+    {
+      "id": "l3-list-deals-spec",
+      "tool": "list_deals",
+      "level": "L3",
+      "task": "Call list_deals with {\"account\": \"Contoso Fabrication\", \"status\": \"open\"} and report the raw result.",
+      "assertions": [
+        "the tool returns a well-formed result when called exactly to spec"
+      ]
+    }
+  ]
+}

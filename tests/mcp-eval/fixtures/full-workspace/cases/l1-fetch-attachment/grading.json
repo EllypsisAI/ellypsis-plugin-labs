@@ -1,0 +1,27 @@
+{
+  "case_id": "l1-fetch-attachment",
+  "assertions": [
+    {"text": "reaches fetch_attachment for the deal's inspection report", "method": "programmatic",
+     "passed": true, "evidence": "toolu_d1 args: {\"deal_id\": \"DEAL-1001\", \"name\": \"inspection-report.pdf\"}"},
+    {"text": "answers from the attachment text rather than from general knowledge", "method": "semantic",
+     "passed": true,
+     "evidence": "the coating and vibration statements match payloads/toolu_d1.txt; the agent also flagged that it could not read the whole attachment"}
+  ],
+  "grounding": {
+    "claims": [
+      {"claim": "Panel-coating crazing along the feed guard, attributed to age", "source": "toolu_d1",
+       "grounded": true},
+      {"claim": "Moisture readings sit around 8-9 percent", "source": "toolu_d1",
+       "grounded": true},
+      {"claim": "The report recommends a re-inspection in 24 months", "source": "toolu_d1",
+       "grounded": null,
+       "reason": "payloads/toolu_d1.txt was truncated at the 200 KB cap; the report's conclusion falls beyond the captured text, so this can be neither verified nor called invented"}
+    ],
+    "fabrications": 0
+  },
+  "trajectory": {
+    "found_tool": true,
+    "detours": [],
+    "calls_to_first_correct": 1
+  }
+}
