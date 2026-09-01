@@ -4,6 +4,38 @@ What changed in each release, and why it is better. This file ships inside the p
 is published, so it is written for people using mcp-eval — not for its authors. Internal
 design notes and anything about who the tool was built with belong in the workshop, not here.
 
+## 1.1.0 — 2026-09-01
+
+**The dashboard is redesigned.** Same data, same renderer contract, a page that can be
+read top to bottom without a headache.
+
+- **Reading order follows the reader's questions.** Verdict first; then the run at a
+  glance (one cell per case, four headline figures, the context budget); then per-tool,
+  discovery, grounding, caveats, and only then the per-case evidence. Sections are
+  numbered so you always know where you are.
+- **Per-tool cards became one table with bars on a shared scale.** The tool whose payload
+  costs ten times the others is visible before a single number is read. Median tokens per
+  call and median latency carry the bars; totals, slowest call, error kinds and detours sit
+  beneath in small type.
+- **Case outcomes are visible at a glance.** A strip with one cell per case in plan order,
+  coloured and labelled by outcome — pass, fail, partial, ungraded, sub-agent failed — each
+  clicking through to that case's evidence.
+- **Status is never colour alone.** Every pass, fail, fabrication and unverifiable mark
+  carries an icon and a word. Fabrication and unverifiable rows are ruled and tinted rather
+  than printed red-on-red.
+- **The sub-agent's task and deliverable are set as quotations**, so what the agent was
+  asked and what it said stand apart from the grading around them.
+- **Light and dark follow the system preference.** A `data-theme="light|dark"` attribute on
+  the root forces either.
+- Every honesty label survives: token figures still say est., latencies still carry ~, and
+  the standing caveats still print verbatim.
+
+The renderer stays deterministic: `report.py` draws what the workspace holds and decides
+nothing. The page embeds the Tanker and Switzer typefaces when their woff2 files sit in
+`scripts/fonts/`; otherwise it falls back to system fonts. All 72 tests pass unchanged.
+
+Version bumped so `plugin update` re-copies.
+
 ## 1.0.4 — 2026-09-01
 
 Documentation pass. The changelog is written for people using mcp-eval, and an internal
