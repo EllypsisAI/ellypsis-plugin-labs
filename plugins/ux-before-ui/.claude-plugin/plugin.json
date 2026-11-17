@@ -1,0 +1,21 @@
+{
+  "name": "ux-before-ui",
+  "version": "1.0.0",
+  "description": "The design method to run before drawing any screen, page or slide. Purpose first, then audience, journey and moments of truth, jobs and actions, how expert teams solve the same jobs - then every screen side by side, critique turned into rules, and a handoff a builder can use. Sized to the medium: app, site, landing page or deck.",
+  "author": {
+    "name": "Ellypsis",
+    "email": "sewar@ellypsis.dk"
+  },
+  "homepage": "https://github.com/EllypsisAI/ellypsis-plugin-labs",
+  "license": "MIT",
+  "keywords": [
+    "ux",
+    "design",
+    "information-architecture",
+    "audit",
+    "user-journey",
+    "landing-page",
+    "pitch-deck",
+    "redesign"
+  ]
+}
