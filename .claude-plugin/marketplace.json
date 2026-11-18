@@ -7,7 +7,7 @@
   },
   "metadata": {
     "description": "Plugins from Ellypsis Labs - knowledge work systems for Claude Code and Cowork.",
-    "version": "0.3.0"
+    "version": "0.4.0"
   },
   "plugins": [
     {
@@ -65,6 +65,26 @@
         "brand",
         "visuals",
         "slides"
+      ]
+    },
+    {
+      "name": "ux-before-ui",
+      "description": "The design method to run before drawing any screen, page or slide. Purpose first, then audience, journey and moments of truth, jobs and actions, how expert teams solve the same jobs - then every screen side by side, critique turned into rules, and a handoff a builder can use. Sized to the medium: app, site, landing page or deck.",
+      "source": "./plugins/ux-before-ui",
+      "category": "design",
+      "author": {
+        "name": "Ellypsis"
+      },
+      "license": "MIT",
+      "keywords": [
+        "ux",
+        "design",
+        "information-architecture",
+        "audit",
+        "user-journey",
+        "landing-page",
+        "pitch-deck",
+        "redesign"
       ]
     }
   ]
