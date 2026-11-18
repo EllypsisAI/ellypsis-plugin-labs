@@ -4,6 +4,7 @@
 
 ### Catalog
 - Removed `brand-kit` from the catalog.
+- `ux-before-ui` now also installs in Codex.
 
 ## [0.4.0] - 2026-11-18
 
