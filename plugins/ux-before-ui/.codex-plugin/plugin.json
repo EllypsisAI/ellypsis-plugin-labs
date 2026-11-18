@@ -1,0 +1,28 @@
+{
+  "name": "ux-before-ui",
+  "version": "1.0.0",
+  "description": "The design method to run before drawing any screen, page or slide: purpose, audience, journey, jobs and how expert teams solve them, then every screen side by side, critique and a handoff.",
+  "author": {
+    "name": "Ellypsis",
+    "url": "https://ellypsis.dk"
+  },
+  "homepage": "https://github.com/EllypsisAI/ellypsis-plugin-labs",
+  "repository": "https://github.com/EllypsisAI/ellypsis-plugin-labs",
+  "license": "MIT",
+  "keywords": ["ux", "design", "information-architecture", "audit", "user-journey", "landing-page", "pitch-deck", "redesign"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ux-before-ui",
+    "shortDescription": "Think like a design team before you draw a single screen",
+    "longDescription": "Most AI-made interfaces start from three style words and go straight to screens. This plugin reverses the order: who arrives, in what state, wanting and fearing what; the journey and its moments of truth; the jobs ranked; how expert teams solve the same jobs, from real product screens. Then every screen, page or slide is drawn side by side, critiqued and handed off. Sized to the medium: app, site, landing page or deck.",
+    "developerName": "Ellypsis",
+    "category": "Design",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://ellypsis.dk",
+    "defaultPrompt": [
+      "Redesign our onboarding, people drop off after signup",
+      "Plan a landing page for our new product before we build it",
+      "Audit the UX of this app and propose a new structure"
+    ]
+  }
+}

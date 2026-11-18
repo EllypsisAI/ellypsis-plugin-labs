@@ -1,50 +1,76 @@
-# Ellypsis Plugin Labs
+<p align="center">
+  <img src="assets/banner.png" alt="Ellypsis Plugin Labs: expert methods for your AI agent" width="100%">
+</p>
 
-The public marketplace for plugins from Ellypsis Labs — for Claude Code and Cowork. One install, every public Ellypsis plugin.
+<p align="center">
+  <img src="https://img.shields.io/badge/Claude_Code-works-7c3f63?style=flat-square" alt="Claude Code">
+  <img src="https://img.shields.io/badge/Claude_Cowork-works-7c3f63?style=flat-square" alt="Claude Cowork">
+  <img src="https://img.shields.io/badge/ChatGPT_Codex-works-7c3f63?style=flat-square" alt="ChatGPT Codex">
+  <img src="https://img.shields.io/badge/license-MIT-191713?style=flat-square" alt="MIT license">
+</p>
 
-## Install
+<p align="center">
+  <b>English</b> ·
+  <a href="i18n/README.da.md">Dansk</a> ·
+  <a href="i18n/README.de.md">Deutsch</a> ·
+  <a href="i18n/README.sv.md">Svenska</a> ·
+  <a href="i18n/README.no.md">Norsk</a> ·
+  <a href="i18n/README.fr.md">Français</a> ·
+  <a href="i18n/README.es.md">Español</a>
+</p>
+
+---
+
+Ask your AI agent for a signup flow and it'll draw you one. It won't ask who's signing up, what they're nervous about, or why half of them leave at step two. It's good at everything and an expert at nothing.
+
+**Plugin Labs gives it the expertise.** Each plugin is how a specialist actually works: the questions they ask first, the mistakes they've learned to avoid, the order they do things in. Install it once, and it kicks in whenever you ask for that kind of work. You talk to your agent the way you always do. It just stops winging it.
+
+## What's inside
+
+| | Plugin | What it does for you | Works in |
+|:-:|---|---|---|
+| 🧭 | **[ux-before-ui](plugins/ux-before-ui)** | Thinks like a design team before it draws anything. Who's coming, what they need, how the best products solve it. Then every screen side by side, critiqued, and handed off. | Claude Code · Cowork · Codex |
+| 🎞️ | **[not-ai-slop](plugins/not-ai-slop)** | Turns your post into a carousel that doesn't look AI-made. You sign off on every word first, and the images follow your brand. | **Codex** (images built in) · Claude Code · Cowork |
+| 🔬 | **[mcp-eval](plugins/mcp-eval)** | Finds out if Claude can actually use your MCP server, and gives you a straight ship or don't-ship verdict. | Claude Code |
+
+More are on the way. Add the marketplace once and new plugins simply show up.
+
+## Get it running in two minutes
+
+**Claude Code**
 
 ```
 /plugin marketplace add EllypsisAI/ellypsis-plugin-labs
-/plugin install <name>@ellypsis-labs
+/plugin install ux-before-ui@ellypsis-labs
 ```
 
-Add the marketplace once, then install anything in the catalog with `@ellypsis-labs`. `/plugin marketplace update` pulls new additions and updated versions.
+**Claude Cowork** (the Claude desktop app)
 
-## What's in here
+Customize → Browse plugins → Personal → **+** → Add marketplace from GitHub → paste `EllypsisAI/ellypsis-plugin-labs` → install what you want.
 
-Plugins live inline in this repo under `plugins/<name>/` — one repo, one working tree, so what ships is what's developed.
+**ChatGPT Codex** (app or CLI)
 
-| Plugin | What it does |
-|---|---|
-| [`brand-kit`](plugins/brand-kit) | Takes a startup from nothing to a usable visual identity. An interview builds the brand foundation, visual brainstorming turns taste into something you can point at, and the kit assembles what you locked into files you can use. |
-| [`mcp-eval`](plugins/mcp-eval) | Evaluates an MCP server in the hands of an LLM. Sub-agents run realistic tasks against your connected server while hooks capture the trajectory — discoverability, argument fidelity, payload economics — and grade it. |
-| [`not-ai-slop`](plugins/not-ai-slop) | Visuals for things you've written that don't announce themselves as generated. Turns a post or article into a carousel: a slide plan you approve before anything is made, then images prompted against a design system. |
+```
+codex plugin marketplace add EllypsisAI/ellypsis-plugin-labs
+codex plugin add not-ai-slop@ellypsis-labs
+```
 
-Current versions live in each plugin's `.claude-plugin/plugin.json` and its CHANGELOG.
+**Or don't bother.** Paste this into Claude Code or Codex and let it do the work:
 
-More shipping over time.
+> Add the plugin marketplace at github.com/EllypsisAI/ellypsis-plugin-labs and install ux-before-ui from it.
 
-## Why a marketplace
+Then just ask for what you want, in your own words. The right plugin picks it up. You can also call one by name, like `/ux-before-ui`.
 
-A marketplace makes a *suite* discoverable: one command adds every public Ellypsis plugin, current and future, and you never need to know an individual plugin's path. It is also the only route — installing a plugin repo directly no longer works, since the CLI requires a marketplace manifest on the source's default branch.
+## Why this beats a good prompt
 
-The shape follows Anthropic's own [`claude-plugins-official`](https://github.com/anthropics/claude-plugins-official): one curated catalog, `marketplace.json` at `.claude-plugin/`, a plugin listed only once it is on `main`.
+A prompt tells your agent what you want. A plugin teaches it how an expert would go about it, and that's the part you can't fit in a chat box.
 
-## What is Ellypsis Labs
+- **Judgment, not checklists.** Your agent adapts the method to your case instead of filling in a template.
+- **You stay in charge.** Plans, slide words and anything that changes the real world wait for your yes.
+- **No made-up facts.** If it doesn't know, it says so.
 
-Ellypsis is a Danish AI consultancy building knowledge-work plugins for Claude. Plugin Labs is the public surface for the parts of that work that generalise — what is useful to anyone doing similar work, rather than to one organisation.
+## Who's behind this
 
-Work built for a specific client stays private, and nothing in this catalog carries a client's data, context, or identity.
+We're [Ellypsis](https://ellypsis.dk), a small Danish AI studio. We build expert plugins for teams that work with AI every day. This marketplace is the part anyone can use, free and MIT-licensed.
 
-Site: [ellypsis.dk](https://ellypsis.dk)
-
-## License
-
-MIT — see [LICENSE](LICENSE). Each plugin carries its own license file where it differs; all plugins currently in this catalog are MIT.
-
-## Contributing
-
-Issues and PRs are welcome here — this is the repo for both the catalog and the plugins in it. Say which plugin you mean in the title.
-
-Test suites live at `tests/<plugin>/`, never inside `plugins/<name>/`. A plugin install copies the plugin directory verbatim, so anything kept in there ships to every user.
+Found a bug or have an idea? Open an issue and name the plugin in the title.
