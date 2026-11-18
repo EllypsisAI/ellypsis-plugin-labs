@@ -1,111 +1,76 @@
-# Ellypsis Plugin Labs
+<p align="center">
+  <img src="assets/banner.png" alt="Ellypsis Plugin Labs: expert methods for your AI agent" width="100%">
+</p>
 
-**Your AI agent can do almost anything. These plugins make it do one thing the way a specialist would.**
+<p align="center">
+  <img src="https://img.shields.io/badge/Claude_Code-works-7c3f63?style=flat-square" alt="Claude Code">
+  <img src="https://img.shields.io/badge/Claude_Cowork-works-7c3f63?style=flat-square" alt="Claude Cowork">
+  <img src="https://img.shields.io/badge/ChatGPT_Codex-works-7c3f63?style=flat-square" alt="ChatGPT Codex">
+  <img src="https://img.shields.io/badge/license-MIT-191713?style=flat-square" alt="MIT license">
+</p>
 
-Each plugin hands your agent a working method: the questions a senior designer asks before drawing, the way an image director thinks about a picture, the tests a platform team runs before shipping an integration. You keep talking to your agent the way you always do. It just stops guessing.
-
-Works with **Claude Code**, **Claude Cowork** and **ChatGPT Codex**. Install in two minutes, below.
-
----
-
-## ux-before-ui
-### Stop getting interfaces that look fine and work badly
-
-Ask an AI for a screen and you get a screen: a design system, three style words, straight to pixels. Nobody asked who arrives, what they fear, or why they leave.
-
-ux-before-ui makes your agent work like a design team. It frames the purpose, maps your audience and their journey, ranks the jobs they came to do, and studies how the best products solve those same jobs, from real product screens. Then it draws **every screen, page or slide side by side**, critiques them with you and hands off a brief a developer can build from.
-
-- Apps, websites, landing pages, onboarding, checkout, pitch decks
-- From a blank page, a rough idea, an MVP or a live product that feels clunky
-- Pairs with [Mobbin](https://mobbin.com/mcp) for real-world references. The first run walks you through the options
-
-> *Try:* "Redesign our onboarding, people drop off after signup" · "Plan a landing page before we build it" · "Audit this app and propose a new structure"
-
-**Runs on:** Claude Code · Claude Cowork · ChatGPT Codex
+<p align="center">
+  <b>English</b> ·
+  <a href="i18n/README.da.md">Dansk</a> ·
+  <a href="i18n/README.de.md">Deutsch</a> ·
+  <a href="i18n/README.sv.md">Svenska</a> ·
+  <a href="i18n/README.no.md">Norsk</a> ·
+  <a href="i18n/README.fr.md">Français</a> ·
+  <a href="i18n/README.es.md">Español</a>
+</p>
 
 ---
 
-## not-ai-slop
-### Visuals for your writing that don't look generated
+Ask your AI agent for a signup flow and it'll draw you one. It won't ask who's signing up, what they're nervous about, or why half of them leave at step two. It's good at everything and an expert at nothing.
 
-Turn a post or article into a carousel people stop scrolling for. You approve the words on every slide before anything is made. Backgrounds are prompted by how a photographer, printer or painter would have made them, not by "modern, clean, minimal", which is exactly what keeps them off the generic AI look. Everything follows your brand, pulled from your website into one small file, and you always get an editable slide file next to the PDF.
+**Plugin Labs gives it the expertise.** Each plugin is how a specialist actually works: the questions they ask first, the mistakes they've learned to avoid, the order they do things in. Install it once, and it kicks in whenever you ask for that kind of work. You talk to your agent the way you always do. It just stops winging it.
 
-> *Try:* "Turn this post into a LinkedIn carousel" · "Write an image prompt that won't look AI-generated" · "Pull our brand out of our website"
+## What's inside
 
-**Best in ChatGPT Codex**, where image generation is built in, so the backgrounds are made for you in the same run. In Claude you get the slide file and finished image prompts to run in any image tool.
+| | Plugin | What it does for you | Works in |
+|:-:|---|---|---|
+| 🧭 | **[ux-before-ui](plugins/ux-before-ui)** | Thinks like a design team before it draws anything. Who's coming, what they need, how the best products solve it. Then every screen side by side, critiqued, and handed off. | Claude Code · Cowork · Codex |
+| 🎞️ | **[not-ai-slop](plugins/not-ai-slop)** | Turns your post into a carousel that doesn't look AI-made. You sign off on every word first, and the images follow your brand. | **Codex** (images built in) · Claude Code · Cowork |
+| 🔬 | **[mcp-eval](plugins/mcp-eval)** | Finds out if Claude can actually use your MCP server, and gives you a straight ship or don't-ship verdict. | Claude Code |
 
----
+More are on the way. Add the marketplace once and new plugins simply show up.
 
-## mcp-eval
-### Find out if Claude can actually use your MCP server
+## Get it running in two minutes
 
-Your server passes its tests. That doesn't mean a model finds the right tool, calls it with sane arguments, survives the payload and grounds its answer in what came back. mcp-eval sends sub-agents through realistic tasks against your connected server, records every call, and hands you a dashboard with a ship or don't-ship verdict.
-
-> *Try:* "Is this MCP server production-ready?" · "Why isn't Claude using my tools?"
-
-**Runs on:** Claude Code. Needs the server you want to test connected, and `python3`.
-
----
-
-## Install
-
-Add the marketplace once, then install whichever plugins you want. New plugins and updates arrive through the same marketplace.
-
-### Claude Code
+**Claude Code**
 
 ```
 /plugin marketplace add EllypsisAI/ellypsis-plugin-labs
 /plugin install ux-before-ui@ellypsis-labs
 ```
 
-Swap in `not-ai-slop` or `mcp-eval` for the others. Update later with `/plugin marketplace update ellypsis-labs`.
+**Claude Cowork** (the Claude desktop app)
 
-### Claude Cowork (Claude desktop app)
+Customize → Browse plugins → Personal → **+** → Add marketplace from GitHub → paste `EllypsisAI/ellypsis-plugin-labs` → install what you want.
 
-1. Open **Customize** → **Browse plugins**.
-2. On the **Personal** tab, click **+** → **Add marketplace from GitHub**.
-3. Paste `EllypsisAI/ellypsis-plugin-labs`.
-4. Pick the plugins you want and install.
-
-### ChatGPT Codex (app or CLI)
+**ChatGPT Codex** (app or CLI)
 
 ```
 codex plugin marketplace add EllypsisAI/ellypsis-plugin-labs
 codex plugin add not-ai-slop@ellypsis-labs
 ```
 
-Or `codex plugin add ux-before-ui@ellypsis-labs`. In the Codex app, type `/plugins` to browse and install.
-
-### Or let your agent do it
-
-Paste this into Claude Code or Codex:
+**Or don't bother.** Paste this into Claude Code or Codex and let it do the work:
 
 > Add the plugin marketplace at github.com/EllypsisAI/ellypsis-plugin-labs and install ux-before-ui from it.
 
-### Then just ask
+Then just ask for what you want, in your own words. The right plugin picks it up. You can also call one by name, like `/ux-before-ui`.
 
-Every plugin wakes up on its own when you ask for what it does, in plain words. You can also call it by name: `/ux-before-ui`, `/carousel`, `/eval`.
+## Why this beats a good prompt
 
-| | Claude Code | Claude Cowork | ChatGPT Codex |
-|---|---|---|---|
-| ux-before-ui | ✓ | ✓ | ✓ |
-| not-ai-slop | ✓ prompts for images | ✓ prompts for images | ★ images built in |
-| mcp-eval | ✓ | | |
+A prompt tells your agent what you want. A plugin teaches it how an expert would go about it, and that's the part you can't fit in a chat box.
 
----
+- **Judgment, not checklists.** Your agent adapts the method to your case instead of filling in a template.
+- **You stay in charge.** Plans, slide words and anything that changes the real world wait for your yes.
+- **No made-up facts.** If it doesn't know, it says so.
 
-## Why they work
+## Who's behind this
 
-- **A method, not a checklist.** Each plugin teaches your agent how a specialist thinks, so it adapts to your case instead of filling in a template.
-- **You stay in charge.** The design frame, the slide words and anything an eval would write all wait for your yes.
-- **No made-up facts.** No invented numbers, quotes or examples dressed up as real.
+We're [Ellypsis](https://ellypsis.dk), a small Danish AI studio. We build expert plugins for teams that work with AI every day. This marketplace is the part anyone can use, free and MIT-licensed.
 
-## About
-
-Built by [Ellypsis](https://ellypsis.dk), a Danish AI consultancy that builds expert plugins for teams who work with AI every day. This marketplace is the part of that work anyone can use, free and MIT-licensed.
-
-Issues and pull requests are welcome. Name the plugin in the title.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+Found a bug or have an idea? Open an issue and name the plugin in the title.
