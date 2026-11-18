@@ -29,6 +29,8 @@ It is the process, not the visual craft. Typography, colour and layout come from
 
 It triggers on its own when you ask for a UI, page, flow or deck to be designed, redesigned or audited. You can also call it directly with `/ux-before-ui`.
 
+It works best with real references to look at. On the first run it asks where they come from: the [Mobbin MCP](https://mobbin.com/mcp) (recommended, needs a paid Mobbin plan), screenshots from Mobbin, Mobbin open in a browser Claude can control, or your own references.
+
 `scripts/render_boards.mjs` renders a folder of HTML boards to PNG and builds a contact sheet. It needs Node and Playwright.
 
 ## License

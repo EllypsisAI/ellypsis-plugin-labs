@@ -31,6 +31,21 @@ One folder per run (for example `design/<date>-<slug>/`). Every phase writes its
 
 Phases 3 to 5 usually run as one research brief for one agent and land in one document with three sections; the order matters more than the file count. Phase 2 runs in parallel with them when there is something to audit, and so does Phase 6. While they run, the lead prepares the **fixed things**: verifies that the design system actually renders (fonts, tokens), writes the shared stylesheet, learns the canvas or board format, and renders one test board. In the run this skill comes from, the fonts had silently fallen back to the system face and nobody noticed until the owner said the boards lacked elegance; the check belongs here, not in revision two.
 
+## First run: choose where the references come from
+
+Without real screens to look at, a model draws the average of what it remembers, and that average is what makes generated UI look generated. Screens from shipped products give it mechanisms real teams have already tested. In the experience of the people who built this method, the runs with a reference library came out clearly better than the runs without one. That is their observation, not a measured result.
+
+The first time the skill runs in a project (there is no earlier run folder with a `FRAME.md`, and the user has not said where references come from), tell the user this in a few lines before Phase 1 and let them choose:
+
+| Option | How | Trade-off |
+|---|---|---|
+| **Mobbin MCP** (recommended): [mobbin.com/mcp](https://mobbin.com/mcp) | Add the connector and sign in once | Best results: the explorer searches flows and screens itself and looks at every image. Needs a paid Mobbin plan |
+| **Screenshots from Mobbin** | The user searches [mobbin.com](https://mobbin.com) and drops screenshots into the run folder | No connector needed; coverage depends on what the user picks |
+| **Mobbin in the browser** | The user signs in to Mobbin in a browser Claude can control and gives Claude access to it | No connector needed; slower than the MCP; uses the user's own account |
+| **Your own references** | The user gives Claude screenshots, links or files of products they admire or compete with | No Mobbin at all; Claude only knows what it is given, so give it plenty |
+
+Record the choice in `FRAME.md`; later runs read the latest one and do not ask again. If the user chooses none, run Phase 6 on the fallbacks and say in `FRAME.md` that exploration ran without a reference library.
+
 ## Phase 1: Frame. The purpose decides the method
 
 Do not start from the medium ("we need an app"). Start from what it must make happen. Write one sentence:
@@ -99,7 +114,7 @@ For a deck, the moments are the arc: why should I listen · do I recognise the p
 
 From the jobs and the risky moments, derive 5 to 10 **pattern areas**, each a job good teams have solved many times ("buying an add-on inside a product", "setup that finishes in another product", "a home page for someone who comes monthly", "a pricing section", "the proof slide"). Per area, 3 to 6 references; per reference three lines: **Mechanism** (why it works, one sentence) · **Steal** (what transfers, in our words) · **Doesn't fit** (and why: scale, tone, constraint). One **recommended pattern per area**, in our words. Open with the two to four findings that most change the design; close with open questions flagged, not resolved.
 
-Scope is interaction, information architecture, flow and copy structure. Visual style is out of scope whenever a design system is fixed; the library must not restyle you. Use a UI reference library if you have one (Mobbin or equivalent; look at every image, never metadata alone). Without one: the products your audience already uses (screenshot them), public help centres and design docs, well-known decks and talks, and your own memory only with the claim marked as memory. Cap it in hours. Research is the comfortable hiding place; decide with cited sources and move. Template: `references/templates-explore.md`.
+Scope is interaction, information architecture, flow and copy structure. Visual style is out of scope whenever a design system is fixed; the library must not restyle you. Use the reference source chosen on the first run (Mobbin or equivalent; look at every image, never metadata alone): real screens are what lift the result above the average of memory. Without one: the products your audience already uses (screenshot them), public help centres and design docs, well-known decks and talks, and your own memory only with the claim marked as memory. Cap it in hours. Research is the comfortable hiding place; decide with cited sources and move. Template: `references/templates-explore.md`.
 
 ## Phase 7: Decide, then draw everything side by side
 
