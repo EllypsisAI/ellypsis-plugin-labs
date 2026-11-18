@@ -1,50 +1,42 @@
 # Ellypsis Plugin Labs
 
-The public marketplace for plugins from Ellypsis Labs — for Claude Code and Cowork. One install, every public Ellypsis plugin.
+Plugins for Claude Code and Cowork. Each one teaches Claude a way of working that a specialist would recognise: how to design before drawing, how to judge an MCP server by how a model actually uses it, how to make visuals that don't look generated.
 
 ## Install
 
 ```
 /plugin marketplace add EllypsisAI/ellypsis-plugin-labs
-/plugin install <name>@ellypsis-labs
+/plugin install <plugin>@ellypsis-labs
 ```
 
-Add the marketplace once, then install anything in the catalog with `@ellypsis-labs`. `/plugin marketplace update` pulls new additions and updated versions.
+Add the marketplace once. `/plugin marketplace update ellypsis-labs` brings in new plugins and new versions.
 
-## What's in here
+## Plugins
 
-Plugins live inline in this repo under `plugins/<name>/` — one repo, one working tree, so what ships is what's developed.
+| Plugin | Use it when you want to | Start with | Needs |
+|---|---|---|---|
+| [`ux-before-ui`](plugins/ux-before-ui) | Design or redesign an app, site, landing page or deck, and work out who it is for and what they must do before anything is drawn | `/ux-before-ui` | Nothing to start. Best with a UI reference library: the [Mobbin MCP](https://mobbin.com/mcp) (paid plan), or screenshots. Node and Playwright to render boards |
+| [`mcp-eval`](plugins/mcp-eval) | Know whether an MCP server works in the hands of Claude: whether it finds the right tool, calls it well, survives the payload and grounds its answer | `/eval` | Claude Code, the server you want to test connected, `python3` |
+| [`not-ai-slop`](plugins/not-ai-slop) | Turn a post or article into a carousel that looks like your brand, not like a generator | `/carousel` | Nothing to install. Where the runtime has no image generation (Claude Code today), you get the image prompts to run elsewhere |
 
-| Plugin | What it does |
-|---|---|
-| [`brand-kit`](plugins/brand-kit) | Takes a startup from nothing to a usable visual identity. An interview builds the brand foundation, visual brainstorming turns taste into something you can point at, and the kit assembles what you locked into files you can use. |
-| [`mcp-eval`](plugins/mcp-eval) | Evaluates an MCP server in the hands of an LLM. Sub-agents run realistic tasks against your connected server while hooks capture the trajectory — discoverability, argument fidelity, payload economics — and grade it. |
-| [`not-ai-slop`](plugins/not-ai-slop) | Visuals for things you've written that don't announce themselves as generated. Turns a post or article into a carousel: a slide plan you approve before anything is made, then images prompted against a design system. |
+Every skill also triggers on its own when you ask for the thing in plain words. Each plugin's README and CHANGELOG has the detail and the current version.
 
-Current versions live in each plugin's `.claude-plugin/plugin.json` and its CHANGELOG.
+## How they are built
 
-More shipping over time.
+- **Judgment over checklists.** Skills teach how to think about the domain and keep the expertise in reference files, so Claude adapts to your case instead of following a script.
+- **You decide before anything costly happens.** The design frame, the carousel's slide plan and any write call an eval would make each wait for your yes.
+- **Nothing is made up.** No invented numbers, quotes or examples presented as fact; a gap is stated as a gap.
 
-## Why a marketplace
+## About
 
-A marketplace makes a *suite* discoverable: one command adds every public Ellypsis plugin, current and future, and you never need to know an individual plugin's path. It is also the only route — installing a plugin repo directly no longer works, since the CLI requires a marketplace manifest on the source's default branch.
-
-The shape follows Anthropic's own [`claude-plugins-official`](https://github.com/anthropics/claude-plugins-official): one curated catalog, `marketplace.json` at `.claude-plugin/`, a plugin listed only once it is on `main`.
-
-## What is Ellypsis Labs
-
-Ellypsis is a Danish AI consultancy building knowledge-work plugins for Claude. Plugin Labs is the public surface for the parts of that work that generalise — what is useful to anyone doing similar work, rather than to one organisation.
-
-Work built for a specific client stays private, and nothing in this catalog carries a client's data, context, or identity.
-
-Site: [ellypsis.dk](https://ellypsis.dk)
-
-## License
-
-MIT — see [LICENSE](LICENSE). Each plugin carries its own license file where it differs; all plugins currently in this catalog are MIT.
+[Ellypsis](https://ellypsis.dk) is a Danish AI consultancy that builds knowledge-work plugins for Claude. This catalog is the part of that work that is useful to anyone.
 
 ## Contributing
 
-Issues and PRs are welcome here — this is the repo for both the catalog and the plugins in it. Say which plugin you mean in the title.
+Issues and PRs are welcome. Name the plugin in the title.
 
-Test suites live at `tests/<plugin>/`, never inside `plugins/<name>/`. A plugin install copies the plugin directory verbatim, so anything kept in there ships to every user.
+Tests live in `tests/<plugin>/`, never inside `plugins/<name>/`: an install copies the plugin folder to every user.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

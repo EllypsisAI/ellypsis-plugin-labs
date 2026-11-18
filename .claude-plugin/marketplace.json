@@ -7,28 +7,9 @@
   },
   "metadata": {
     "description": "Plugins from Ellypsis Labs - knowledge work systems for Claude Code and Cowork.",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "plugins": [
-    {
-      "name": "brand-kit",
-      "description": "Takes a startup from nothing to a usable visual identity - logo, color palette, typography - in conversation. An interview builds your brand foundation, visual brainstorming turns taste into something you can point at, and the kit assembles what you locked into files you can actually use.",
-      "source": "./plugins/brand-kit",
-      "category": "design",
-      "author": {
-        "name": "Ellypsis"
-      },
-      "license": "MIT",
-      "keywords": [
-        "brand",
-        "visual-identity",
-        "logo",
-        "design",
-        "startup",
-        "palette",
-        "typography"
-      ]
-    },
     {
       "name": "mcp-eval",
       "description": "Evaluate an MCP server in the hands of an LLM. Sub-agents run realistic tasks against your connected server while hooks capture the trajectory - discoverability, argument fidelity, payload economics, latency, reliability, grounding. Verdict-first HTML dashboard.",

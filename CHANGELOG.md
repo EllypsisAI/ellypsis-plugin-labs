@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.0] - 2026-11-18
+
+### Catalog
+- Removed `brand-kit` from the catalog.
+
+## [0.4.0] - 2026-11-18
+
+### Catalog
+- Added `ux-before-ui` **v1.0.0** — the design method to run before drawing any screen, page or slide: purpose, audience, journey, jobs and how expert teams solve them, then every screen side by side, critique and a handoff.
+
 ## [0.3.0] - 2026-09-01
 
 ### Catalog
